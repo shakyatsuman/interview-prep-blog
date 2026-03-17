@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two Pointers — Interview Prep Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:        #0f1a0f;
+      --ink-soft:   #2e3f2e;
+      --ink-faint:  #5a7a5a;
+      --paper:      #f5f8f5;
+      --paper-warm: #eef2ec;
+      --accent:     #1a6b3c;
+      --accent-alt: #1d4e8f;
+      --orange:     #b5460f;
+      --highlight:  #c8e86a;
+      --green:      #0e7c5b;
+      --code-bg:    #0a1a0f;
+      --code-fg:    #b0ceb0;
+      --border:     #c8d5c8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 17px;
+      line-height: 1.8;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 72px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 50% 110%, #1a6b3c28, transparent);
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--highlight), var(--green));
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--highlight);
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(2rem, 5.5vw, 3.4rem);
+      font-weight: 700;
+      line-height: 1.15;
+      max-width: 680px;
+      margin: 0 auto 16px;
+    }
+    .hero-sub {
+      color: #7a9a7a;
+      font-size: 15px;
+      font-weight: 300;
+      max-width: 520px;
+      margin: 0 auto 36px;
+    }
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #4a6a4a;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+    .post-body { padding: 60px 24px 96px; }
+
+    /* ── TYPOGRAPHY ── */
+    h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 52px 0 14px;
+      line-height: 1.25;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent-alt);
+      margin: 32px 0 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    p { margin-bottom: 16px; color: var(--ink-soft); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--paper-warm);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 5px 5px 0;
+    }
+    .callout-tip  { border-left-color: var(--green); }
+    .callout-note { border-left-color: var(--accent-alt); }
+    .callout-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 5px;
+    }
+    .callout-tip  .callout-label { color: var(--green); }
+    .callout-note .callout-label { color: var(--accent-alt); }
+    .callout p { margin: 0; font-size: 15px; }
+
+    /* ── CODE ── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-fg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      padding: 26px 28px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 20px 0 28px;
+      position: relative;
+    }
+    pre .lang { position: absolute; top: 10px; right: 14px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #2a4a2a; }
+    .kw  { color: #7ec8a0; }
+    .fn  { color: #a8d8a8; }
+    .cm  { color: #2a4a2a; font-style: italic; }
+    .str { color: #d4e8a0; }
+    .num { color: #e8c87a; }
+    .tp  { color: #90d890; }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.83em;
+      background: var(--paper-warm);
+      border: 1px solid var(--border);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--orange);
+    }
+
+    /* ── DIAGRAMS ── */
+    .diagram-wrap {
+      margin: 32px 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px 16px 20px;
+      text-align: center;
+      box-shadow: 0 1px 12px rgba(0,0,0,0.04);
+    }
+    .diagram-caption {
+      font-size: 12.5px;
+      color: var(--ink-faint);
+      margin-top: 14px;
+      font-style: italic;
+    }
+
+    /* ── TABLE ── */
+    .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .data-table th { background: var(--ink); color: var(--paper); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); font-weight: 300; }
+    .data-table tr:nth-child(even) td { background: var(--paper-warm); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; }
+    .b-green  { background: #d4f0e4; color: #0a6e46; }
+    .b-yellow { background: #fdf0c8; color: #8a6000; }
+    .b-red    { background: #fde4e4; color: #a01010; }
+
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    /* ── FOOTER ── */
+    .post-footer { background: var(--ink); color: #3a5a3a; text-align: center; padding: 44px 24px; font-size: 13px; }
+    .post-footer strong { color: #7a9a7a; }
+    .next-label { margin-top: 10px; color: var(--highlight); font-style: italic; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">Interview Prep Series · Post #2 of 20</div>
+  <h1>Two Pointers</h1>
+  <p class="hero-sub">Eliminate the inner loop. Two indices moving through an array in a single pass unlock O(n) solutions that sorting alone cannot reach.</p>
+  <div class="hero-meta">
+    <span>⏱ 5 min read</span>
+    <span>🌿 Fundamentals</span>
+    <span>🔑 Java 8</span>
+    <span>📈 Intermediate → Advanced</span>
+  </div>
+</header>
+
+<main class="post-body">
+<div class="container">
+
+  <p>The two-pointer technique places two indices into an array and moves them — toward each other, or in the same direction at different speeds — to solve problems that would otherwise require a nested loop. The prerequisite insight from Post #1 applies directly: <strong>when you know something about the structure of your data, you can skip work rather than checking every pair.</strong> Here, sorting provides that structure.</p>
+
+  <!-- §1 Core Idea -->
+  <h2>The Core Idea</h2>
+  <p>A brute-force search over all pairs costs O(n²). Two pointers reduce this to O(n) by exploiting a <strong>monotonic relationship</strong>: on a sorted array, if the current sum of two elements is too large, moving the right pointer left will decrease it; if too small, moving the left pointer right will increase it. Each pointer moves at most n steps total, giving O(n) work.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 670 150" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .tm { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+          .tl { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+        </style>
+        <marker id="tArr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#1a6b3c"/>
+        </marker>
+      </defs>
+
+      <!-- Cells -->
+      <rect x="20"  y="20" width="72" height="48" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="102" y="20" width="72" height="48" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="184" y="20" width="72" height="48" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="266" y="20" width="72" height="48" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="348" y="20" width="72" height="48" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="430" y="20" width="72" height="48" rx="5" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.8"/>
+      <rect x="512" y="20" width="72" height="48" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="594" y="20" width="72" height="48" rx="5" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.8"/>
+
+      <text x="56"  y="50" class="tm" fill="#5a7a5a" text-anchor="middle">-3</text>
+      <text x="138" y="50" class="tm" fill="#5a7a5a" text-anchor="middle">1</text>
+      <text x="220" y="50" class="tm" fill="#5a7a5a" text-anchor="middle">2</text>
+      <text x="302" y="50" class="tm" fill="#5a7a5a" text-anchor="middle">4</text>
+      <text x="384" y="50" class="tm" fill="#5a7a5a" text-anchor="middle">6</text>
+      <text x="466" y="50" class="tm" fill="#1a6b3c" text-anchor="middle">7</text>
+      <text x="548" y="50" class="tm" fill="#5a7a5a" text-anchor="middle">8</text>
+      <text x="630" y="50" class="tm" fill="#1a6b3c" text-anchor="middle">9</text>
+
+      <!-- Index labels -->
+      <text x="56"  y="82" class="tl" fill="#9aaa9a" text-anchor="middle">[0]</text>
+      <text x="138" y="82" class="tl" fill="#9aaa9a" text-anchor="middle">[1]</text>
+      <text x="220" y="82" class="tl" fill="#9aaa9a" text-anchor="middle">[2]</text>
+      <text x="302" y="82" class="tl" fill="#9aaa9a" text-anchor="middle">[3]</text>
+      <text x="384" y="82" class="tl" fill="#9aaa9a" text-anchor="middle">[4]</text>
+      <text x="466" y="82" class="tl" fill="#1a6b3c" text-anchor="middle">L</text>
+      <text x="548" y="82" class="tl" fill="#9aaa9a" text-anchor="middle">[6]</text>
+      <text x="630" y="82" class="tl" fill="#1a6b3c" text-anchor="middle">R</text>
+
+      <!-- Arrows converging -->
+      <line x1="466" y1="90" x2="500" y2="108" stroke="#1a6b3c" stroke-width="1.4" marker-end="url(#tArr)"/>
+      <line x1="630" y1="90" x2="596" y2="108" stroke="#1a6b3c" stroke-width="1.4" marker-end="url(#tArr)"/>
+      <text x="548" y="125" class="tl" fill="#1a6b3c" text-anchor="middle" font-weight="600">L + R = 7 + 9 = 16 &gt; target 9 → move R left</text>
+    </svg>
+    <p class="diagram-caption">Fig 1. Opposite-end pointers on a sorted array. Each move eliminates one element from consideration — no element is visited more than once.</p>
+  </div>
+
+  <!-- §2 Two Flavors -->
+  <h2>Two Flavors of Two Pointers</h2>
+
+  <h3>Opposite-End Pointers</h3>
+  <p>Left starts at index 0, right starts at the last index. They converge toward the centre. Use when the array is sorted and you need to find a <strong>pair satisfying a condition</strong> — a sum, product, or distance constraint.</p>
+
+  <h3>Same-Direction Pointers (Fast / Slow)</h3>
+  <p>Both pointers start at the same end and advance at different rates. Use for <strong>partitioning</strong>, removing duplicates in-place, or detecting cycles in linked lists. The slow pointer marks the write position; the fast pointer scans ahead.</p>
+
+  <div class="diagram-wrap">
+            <svg viewBox="0 0 660 250" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>.dm { font-family:'JetBrains Mono',monospace; font-size:13.5px; }
+               .dl { font-family:'Source Sans 3',sans-serif; font-size:12px; fill:#5a7a5a; }</style>
+      </defs>
+
+      <!-- Step label column x=0..62 | Cell columns start x=64, width=58, gap=2 -->
+      <!-- Row stride=66: cell_h=34, ptr_label=20, gap=12 -->
+      <!-- Row1 y=8  Row2 y=74  Row3 y=140  Row4 y=206 -->
+
+      <!-- ── ROW 1: Initial — S=0 F=1, duplicate [1] highlighted ── -->
+      <text x="31" y="31" class="vs" fill="#1a6b3c" text-anchor="middle" font-size="11" font-weight="600">Initial</text>
+      <rect x="64"  y="8"  width="58" height="34" rx="4" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="124" y="8"  width="58" height="34" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2" stroke-dasharray="4"/>
+      <rect x="184" y="8"  width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="244" y="8"  width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="304" y="8"  width="58" height="34" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2" stroke-dasharray="4"/>
+      <rect x="364" y="8"  width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <text x="93"  y="31" class="dm" fill="#1a6b3c" text-anchor="middle">1</text>
+      <text x="153" y="31" class="dm" fill="#b5460f" text-anchor="middle">1</text>
+      <text x="213" y="31" class="dm" fill="#5a7a5a" text-anchor="middle">2</text>
+      <text x="273" y="31" class="dm" fill="#5a7a5a" text-anchor="middle">3</text>
+      <text x="333" y="31" class="dm" fill="#b5460f" text-anchor="middle">3</text>
+      <text x="393" y="31" class="dm" fill="#5a7a5a" text-anchor="middle">4</text>
+      <text x="93"  y="54" class="dl" text-anchor="middle">S</text>
+      <text x="153" y="54" class="dl" text-anchor="middle">F</text>
+      <text x="430" y="28" class="dl" font-size="11" fill="#b5460f">nums[F]==nums[S]</text>
+      <text x="430" y="42" class="dl" font-size="11" fill="#b5460f">skip — F++</text>
+
+      <!-- ── ROW 2: Step 2 — F advances to [2], new unique found ── -->
+      <text x="31" y="97" class="vs" fill="#1a6b3c" text-anchor="middle" font-size="11" font-weight="600">Step 2</text>
+      <rect x="64"  y="74" width="58" height="34" rx="4" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="124" y="74" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="184" y="74" width="58" height="34" rx="4" fill="#0e7c5b" opacity="0.18" stroke="#0e7c5b" stroke-width="1.8"/>
+      <rect x="244" y="74" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="304" y="74" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="364" y="74" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <text x="93"  y="97" class="dm" fill="#1a6b3c" text-anchor="middle">1</text>
+      <text x="153" y="97" class="dm" fill="#5a7a5a" text-anchor="middle">1</text>
+      <text x="213" y="97" class="dm" fill="#0e7c5b" text-anchor="middle">2</text>
+      <text x="273" y="97" class="dm" fill="#5a7a5a" text-anchor="middle">3</text>
+      <text x="333" y="97" class="dm" fill="#5a7a5a" text-anchor="middle">3</text>
+      <text x="393" y="97" class="dm" fill="#5a7a5a" text-anchor="middle">4</text>
+      <text x="93"  y="120" class="dl" text-anchor="middle">S</text>
+      <text x="213" y="120" class="dl" text-anchor="middle">F</text>
+      <text x="430" y="94" class="dl" font-size="11" fill="#0e7c5b">nums[F]!=nums[S]</text>
+      <text x="430" y="108" class="dl" font-size="11" fill="#0e7c5b">S++, write 2</text>
+
+      <!-- ── ROW 3: Step 3 — S at [1], F advances past duplicate [4] ── -->
+      <text x="31" y="163" class="vs" fill="#1a6b3c" text-anchor="middle" font-size="11" font-weight="600">Step 3</text>
+      <rect x="64"  y="140" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="124" y="140" width="58" height="34" rx="4" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="184" y="140" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="244" y="140" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="304" y="140" width="58" height="34" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2" stroke-dasharray="4"/>
+      <rect x="364" y="140" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <text x="93"  y="163" class="dm" fill="#5a7a5a" text-anchor="middle">1</text>
+      <text x="153" y="163" class="dm" fill="#1a6b3c" text-anchor="middle">2</text>
+      <text x="213" y="163" class="dm" fill="#5a7a5a" text-anchor="middle">2</text>
+      <text x="273" y="163" class="dm" fill="#5a7a5a" text-anchor="middle">3</text>
+      <text x="333" y="163" class="dm" fill="#b5460f" text-anchor="middle">3</text>
+      <text x="393" y="163" class="dm" fill="#5a7a5a" text-anchor="middle">4</text>
+      <text x="153" y="186" class="dl" text-anchor="middle">S</text>
+      <text x="333" y="186" class="dl" text-anchor="middle">F</text>
+      <text x="430" y="160" class="dl" font-size="11" fill="#b5460f">nums[F]==nums[S-1]</text>
+      <text x="430" y="174" class="dl" font-size="11" fill="#b5460f">skip duplicate 3</text>
+
+      <!-- ── ROW 4: Result ── -->
+      <text x="31" y="229" class="vs" fill="#1a6b3c" text-anchor="middle" font-size="11" font-weight="600">Result</text>
+      <rect x="64"  y="206" width="58" height="34" rx="4" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.2"/>
+      <rect x="124" y="206" width="58" height="34" rx="4" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.2"/>
+      <rect x="184" y="206" width="58" height="34" rx="4" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.2"/>
+      <rect x="244" y="206" width="58" height="34" rx="4" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.2"/>
+      <rect x="304" y="206" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1" opacity="0.5"/>
+      <rect x="364" y="206" width="58" height="34" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1" opacity="0.5"/>
+      <text x="93"  y="229" class="dm" fill="#1a6b3c" text-anchor="middle">1</text>
+      <text x="153" y="229" class="dm" fill="#1a6b3c" text-anchor="middle">2</text>
+      <text x="213" y="229" class="dm" fill="#1a6b3c" text-anchor="middle">3</text>
+      <text x="273" y="229" class="dm" fill="#1a6b3c" text-anchor="middle">4</text>
+      <text x="333" y="229" class="dm" fill="#c8d5c8" text-anchor="middle">_</text>
+      <text x="393" y="229" class="dm" fill="#c8d5c8" text-anchor="middle">_</text>
+    </svg>
+    <p class="diagram-caption">Fig 2. Fast/slow pointers removing duplicates in-place. Slow marks the write position; Fast scans ahead and copies unique values.</p>
+  </div>
+
+  <!-- Example 1 -->
+  <h2>Example 1 — Two Sum II (Sorted Array)</h2>
+  <p><em>LeetCode #167 · Difficulty: Medium</em></p>
+  <p>Given a <strong>1-indexed sorted array</strong> of integers and a target, return the indices of the two numbers that add up to target. Exactly one solution exists; each element may be used at most once.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>numbers = [2, 7, 11, 15], target = 9</code> → <strong>[1, 2]</strong> because <code>numbers[1] + numbers[2] = 2 + 7 = 9</code></p>
+  </div>
+
+  <p>Because the array is sorted, the sum of <code>numbers[left] + numbers[right]</code> changes predictably as each pointer moves. This is the monotonic property that makes two pointers work here.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 160" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>.e1m { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+               .e1l { font-family:'Source Sans 3',sans-serif; font-size:12px; }</style>
+      </defs>
+      <!-- Array -->
+      <rect x="100" y="10" width="70" height="46" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="180" y="10" width="70" height="46" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="260" y="10" width="70" height="46" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <rect x="340" y="10" width="70" height="46" rx="5" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1.2"/>
+      <text x="135" y="39" class="e1m" fill="#5a7a5a" text-anchor="middle">2</text>
+      <text x="215" y="39" class="e1m" fill="#5a7a5a" text-anchor="middle">7</text>
+      <text x="295" y="39" class="e1m" fill="#5a7a5a" text-anchor="middle">11</text>
+      <text x="375" y="39" class="e1m" fill="#5a7a5a" text-anchor="middle">15</text>
+
+      <!-- Step 1: L=0, R=3 -->
+      <text x="10" y="80" class="e1l" fill="#1a6b3c" font-weight="600">Step 1</text>
+      <rect x="100" y="65" width="70" height="30" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="340" y="65" width="70" height="30" rx="4" fill="#b5460f" opacity="0.18" stroke="#b5460f" stroke-width="1.5"/>
+      <text x="135" y="85" class="e1l" fill="#1a6b3c" text-anchor="middle" font-weight="600">L</text>
+      <text x="375" y="85" class="e1l" fill="#b5460f" text-anchor="middle" font-weight="600">R</text>
+      <text x="490" y="80" class="e1l" fill="#5a7a5a">2+15=17 &gt; 9 → R--</text>
+
+      <!-- Step 2: L=0, R=2 -->
+      <text x="10" y="110" class="e1l" fill="#1a6b3c" font-weight="600">Step 2</text>
+      <rect x="100" y="95" width="70" height="30" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="260" y="95" width="70" height="30" rx="4" fill="#b5460f" opacity="0.18" stroke="#b5460f" stroke-width="1.5"/>
+      <text x="135" y="115" class="e1l" fill="#1a6b3c" text-anchor="middle" font-weight="600">L</text>
+      <text x="295" y="115" class="e1l" fill="#b5460f" text-anchor="middle" font-weight="600">R</text>
+      <text x="490" y="110" class="e1l" fill="#5a7a5a">2+11=13 &gt; 9 → R--</text>
+
+      <!-- Step 3: found -->
+      <text x="10" y="140" class="e1l" fill="#1a6b3c" font-weight="600">Step 3</text>
+      <rect x="100" y="125" width="70" height="30" rx="4" fill="#1a6b3c" opacity="0.28" stroke="#1a6b3c" stroke-width="2"/>
+      <rect x="180" y="125" width="70" height="30" rx="4" fill="#1a6b3c" opacity="0.28" stroke="#1a6b3c" stroke-width="2"/>
+      <text x="135" y="145" class="e1l" fill="#1a6b3c" text-anchor="middle" font-weight="600">L</text>
+      <text x="215" y="145" class="e1l" fill="#1a6b3c" text-anchor="middle" font-weight="600">R</text>
+      <text x="490" y="140" class="e1l" fill="#1a6b3c" font-weight="600">2+7=9 = target → return [1,2] ✓</text>
+    </svg>
+    <p class="diagram-caption">Fig 3. Two Sum II trace. Three steps to find the answer; brute force would check all 6 pairs.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span>[] <span class="fn">twoSum</span>(<span class="kw">int</span>[] numbers, <span class="kw">int</span> target) {
+    <span class="kw">int</span> left  = <span class="num">0</span>;
+    <span class="kw">int</span> right = numbers.length - <span class="num">1</span>;
+
+    <span class="kw">while</span> (left &lt; right) {
+        <span class="kw">int</span> sum = numbers[left] + numbers[right];
+
+        <span class="kw">if</span> (sum == target) {
+            <span class="kw">return new int</span>[] { left + <span class="num">1</span>, right + <span class="num">1</span> }; <span class="cm">// 1-indexed</span>
+        } <span class="kw">else if</span> (sum &lt; target) {
+            left++;   <span class="cm">// sum too small — increase by moving left pointer right</span>
+        } <span class="kw">else</span> {
+            right--;  <span class="cm">// sum too large — decrease by moving right pointer left</span>
+        }
+    }
+
+    <span class="kw">return new int</span>[] {}; <span class="cm">// unreachable per problem guarantee</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(1)</span></pre>
+
+  <!-- Example 2 -->
+  <h2>Example 2 — Remove Duplicates from Sorted Array</h2>
+  <p><em>LeetCode #26 · Easy · Same-direction fast/slow pointers</em></p>
+  <p>Given an integer array sorted in non-decreasing order, remove duplicates <strong>in-place</strong> so each unique element appears only once. Return the count of unique elements. The relative order must be preserved and O(1) extra space must be used.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>nums = [1, 1, 2, 3, 3, 4]</code> → returns <strong>4</strong>, array modified to <code>[1, 2, 3, 4, _, _]</code></p>
+  </div>
+
+  <p>The slow pointer marks the <strong>write position</strong> — the last confirmed unique element. The fast pointer scans ahead. When it finds an element different from <code>nums[slow]</code>, a new unique element has been discovered: advance slow and overwrite. Because the array is sorted, all duplicates of any value are contiguous, so this single pass is sufficient.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 222" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>.e2m { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+               .e2l { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+               .e2s { font-family:'Source Sans 3',sans-serif; font-size:11px; }</style>
+      </defs>
+
+      <!-- 6 cells: x=64, w=74, gap=2. Centers: 101,177,253,329,405,481 -->
+      <!-- Row stride=52 (cell h=32 + gap 20). Rows at y=10,62,114,166 -->
+
+      <!-- Column headers -->
+      <text x="101" y="8"  class="e2s" fill="#9aaa9a" text-anchor="middle">[0]</text>
+      <text x="177" y="8"  class="e2s" fill="#9aaa9a" text-anchor="middle">[1]</text>
+      <text x="253" y="8"  class="e2s" fill="#9aaa9a" text-anchor="middle">[2]</text>
+      <text x="329" y="8"  class="e2s" fill="#9aaa9a" text-anchor="middle">[3]</text>
+      <text x="405" y="8"  class="e2s" fill="#9aaa9a" text-anchor="middle">[4]</text>
+      <text x="481" y="8"  class="e2s" fill="#9aaa9a" text-anchor="middle">[5]</text>
+
+      <!-- Step 1: S=0, F=1  — nums[F]==nums[S], skip -->
+      <text x="31" y="30" class="e2l" fill="#5a7a5a" text-anchor="middle" font-weight="600">Step 1</text>
+      <rect x="64"  y="14" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.8"/>
+      <rect x="140" y="14" width="74" height="32" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2" stroke-dasharray="4"/>
+      <rect x="216" y="14" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="292" y="14" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="368" y="14" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="444" y="14" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <text x="101" y="36" class="e2m" fill="#1a6b3c" text-anchor="middle">1</text>
+      <text x="177" y="36" class="e2m" fill="#b5460f" text-anchor="middle">1</text>
+      <text x="253" y="36" class="e2m" fill="#5a7a5a" text-anchor="middle">2</text>
+      <text x="329" y="36" class="e2m" fill="#5a7a5a" text-anchor="middle">3</text>
+      <text x="405" y="36" class="e2m" fill="#5a7a5a" text-anchor="middle">3</text>
+      <text x="481" y="36" class="e2m" fill="#5a7a5a" text-anchor="middle">4</text>
+      <text x="101" y="56" class="e2l" fill="#1a6b3c" text-anchor="middle">S</text>
+      <text x="177" y="56" class="e2l" fill="#b5460f" text-anchor="middle">F</text>
+      <text x="530" y="38" class="e2s" fill="#b5460f">nums[F]==nums[S]</text>
+      <text x="530" y="52" class="e2s" fill="#b5460f">skip — F++</text>
+
+      <!-- Step 2: S=0, F=2 — nums[F]!=nums[S], write -->
+      <text x="31" y="82" class="e2l" fill="#5a7a5a" text-anchor="middle" font-weight="600">Step 2</text>
+      <rect x="64"  y="66" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.8"/>
+      <rect x="140" y="66" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="216" y="66" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.12" stroke="#1a6b3c" stroke-width="1.2"/>
+      <rect x="292" y="66" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="368" y="66" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="444" y="66" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <text x="101" y="88" class="e2m" fill="#1a6b3c" text-anchor="middle">1</text>
+      <text x="177" y="88" class="e2m" fill="#5a7a5a" text-anchor="middle">1</text>
+      <text x="253" y="88" class="e2m" fill="#1a6b3c" text-anchor="middle">2</text>
+      <text x="329" y="88" class="e2m" fill="#5a7a5a" text-anchor="middle">3</text>
+      <text x="405" y="88" class="e2m" fill="#5a7a5a" text-anchor="middle">3</text>
+      <text x="481" y="88" class="e2m" fill="#5a7a5a" text-anchor="middle">4</text>
+      <text x="101" y="108" class="e2l" fill="#1a6b3c" text-anchor="middle">S</text>
+      <text x="253" y="108" class="e2l" fill="#1a6b3c" text-anchor="middle">F</text>
+      <text x="530" y="90" class="e2s" fill="#1a6b3c">nums[F]!=nums[S]</text>
+      <text x="530" y="104" class="e2s" fill="#1a6b3c">S++, write 2 → S++</text>
+
+      <!-- Step 3: S=1 (wrote 2), F=3, nums[F]=3 != nums[S]=2, write -->
+      <text x="31" y="134" class="e2l" fill="#5a7a5a" text-anchor="middle" font-weight="600">Step 3</text>
+      <rect x="64"  y="118" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="140" y="118" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.8"/>
+      <rect x="216" y="118" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <rect x="292" y="118" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.12" stroke="#1a6b3c" stroke-width="1.2"/>
+      <rect x="368" y="118" width="74" height="32" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2" stroke-dasharray="4"/>
+      <rect x="444" y="118" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1"/>
+      <text x="101" y="140" class="e2m" fill="#5a7a5a" text-anchor="middle">1</text>
+      <text x="177" y="140" class="e2m" fill="#1a6b3c" text-anchor="middle">2</text>
+      <text x="253" y="140" class="e2m" fill="#5a7a5a" text-anchor="middle">2</text>
+      <text x="329" y="140" class="e2m" fill="#1a6b3c" text-anchor="middle">3</text>
+      <text x="405" y="140" class="e2m" fill="#b5460f" text-anchor="middle">3</text>
+      <text x="481" y="140" class="e2m" fill="#5a7a5a" text-anchor="middle">4</text>
+      <text x="177" y="160" class="e2l" fill="#1a6b3c" text-anchor="middle">S</text>
+      <text x="329" y="160" class="e2l" fill="#1a6b3c" text-anchor="middle">F</text>
+      <text x="530" y="142" class="e2s" fill="#b5460f">nums[F+1]==nums[F]</text>
+      <text x="530" y="156" class="e2s" fill="#b5460f">skip duplicate 3</text>
+
+      <!-- Result -->
+      <text x="31" y="190" class="e2l" fill="#5a7a5a" text-anchor="middle" font-weight="600">Result</text>
+      <rect x="64"  y="174" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="140" y="174" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="216" y="174" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="292" y="174" width="74" height="32" rx="4" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.5"/>
+      <rect x="368" y="174" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1" opacity="0.5"/>
+      <rect x="444" y="174" width="74" height="32" rx="4" fill="#eef2ec" stroke="#c8d5c8" stroke-width="1" opacity="0.5"/>
+      <text x="101" y="196" class="e2m" fill="#1a6b3c" text-anchor="middle">1</text>
+      <text x="177" y="196" class="e2m" fill="#1a6b3c" text-anchor="middle">2</text>
+      <text x="253" y="196" class="e2m" fill="#1a6b3c" text-anchor="middle">3</text>
+      <text x="329" y="196" class="e2m" fill="#1a6b3c" text-anchor="middle">4</text>
+      <text x="405" y="196" class="e2m" fill="#c8d5c8" text-anchor="middle">_</text>
+      <text x="481" y="196" class="e2m" fill="#c8d5c8" text-anchor="middle">_</text>
+      <text x="280" y="216" class="e2s" fill="#1a6b3c" text-anchor="middle">return 4  ✓  (slow + 1 = number of unique elements)</text>
+    </svg>
+    <p class="diagram-caption">Fig 4. Fast/slow same-direction pointers. Green = current write position (S). Dashed red = duplicate being skipped. Each unique value is written exactly once.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span> <span class="fn">removeDuplicates</span>(<span class="kw">int</span>[] nums) {
+    <span class="kw">if</span> (nums.length == <span class="num">0</span>) <span class="kw">return</span> <span class="num">0</span>;
+
+    <span class="kw">int</span> slow = <span class="num">0</span>;  <span class="cm">// write position — last confirmed unique element</span>
+
+    <span class="kw">for</span> (<span class="kw">int</span> fast = <span class="num">1</span>; fast &lt; nums.length; fast++) {
+        <span class="kw">if</span> (nums[fast] != nums[slow]) {  <span class="cm">// new unique element found</span>
+            slow++;
+            nums[slow] = nums[fast];       <span class="cm">// write it into the next position</span>
+        }
+        <span class="cm">// if equal: fast advances, slow stays — duplicate is skipped</span>
+    }
+
+    <span class="kw">return</span> slow + <span class="num">1</span>;  <span class="cm">// number of unique elements</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(1)</span></pre>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Key Insight</div>
+    <p>The array being <strong>sorted</strong> is what makes this work: all copies of any duplicate are contiguous, so a single left-to-right pass encounters each unique value exactly once. On an unsorted array you would need a HashSet — O(n) space. Sorting first costs O(n log n) but then enables this O(1)-space pass.</p>
+  </div>
+
+  <!-- Template -->
+  <h2>Universal Template</h2>
+  <p>The two canonical forms of the two-pointer pattern:</p>
+
+<pre><span class="lang">Java 8 — Opposite-End</span><span class="cm">// Pattern A: opposite-end pointers (sorted array, pair search)</span>
+<span class="kw">int</span> left  = <span class="num">0</span>;
+<span class="kw">int</span> right = arr.length - <span class="num">1</span>;
+
+<span class="kw">while</span> (left &lt; right) {
+    <span class="kw">int</span> val = compute(arr[left], arr[right]);
+    <span class="kw">if</span>      (val == target) { <span class="cm">/* found */</span> }
+    <span class="kw">else if</span> (val &lt; target)  { left++;  }  <span class="cm">// need larger value</span>
+    <span class="kw">else</span>                    { right--; }  <span class="cm">// need smaller value</span>
+}</pre>
+
+<pre><span class="lang">Java 8 — Fast / Slow</span><span class="cm">// Pattern B: same-direction fast/slow (partition, dedup)</span>
+<span class="kw">int</span> slow = <span class="num">0</span>; <span class="cm">// write position</span>
+
+<span class="kw">for</span> (<span class="kw">int</span> fast = <span class="num">1</span>; fast &lt; arr.length; fast++) {
+    <span class="kw">if</span> (arr[fast] != arr[slow]) { <span class="cm">// new unique element found</span>
+        slow++;
+        arr[slow] = arr[fast];   <span class="cm">// write it into position</span>
+    }
+    <span class="cm">// if equal: fast advances, slow stays — duplicate is skipped</span>
+}</pre>
+
+  <!-- Complexity -->
+  <h2>Complexity Summary</h2>
+  <table class="data-table">
+    <thead><tr><th>Approach</th><th>Time</th><th>Space</th><th>Prerequisite</th></tr></thead>
+    <tbody>
+      <tr><td>Nested loop (brute force)</td><td><span class="badge b-red">O(n²)</span></td><td><span class="badge b-green">O(1)</span></td><td>None</td></tr>
+      <tr><td>HashMap (Post #1)</td><td><span class="badge b-green">O(n)</span></td><td><span class="badge b-yellow">O(n)</span></td><td>None — works on unsorted data</td></tr>
+      <tr><td>Two pointers</td><td><span class="badge b-green">O(n)</span></td><td><span class="badge b-green">O(1)</span></td><td>Must be sorted first — O(n log n) total if sorting required</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-note">
+    <div class="callout-label">When to choose Two Pointers over HashMap</div>
+    <p>Two pointers win when: (1) you need O(1) space, (2) sorting is acceptable or the array is already sorted, (3) the problem requires in-place modification with no extra data structure.</p>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>When to Reach for Two Pointers</h2>
+  <p>Recognize these signals in a problem statement:</p>
+  <ul style="margin: 0 0 18px 24px; color: var(--ink-soft); font-weight:300; line-height:2;">
+    <li>Find a <strong>pair or triplet</strong> in a sorted array satisfying a sum or condition</li>
+    <li><strong>Remove duplicates</strong> or filter elements in-place with O(1) space</li>
+    <li>Maximise or minimise a value defined by <strong>two endpoints</strong> (area, distance)</li>
+    <li>The problem says "sorted" or sorting would not destroy useful information</li>
+    <li>Linked list <strong>cycle detection</strong> or finding the middle node (fast/slow variant)</li>
+  </ul>
+
+  <hr class="divider"/>
+
+  <h2>Practice Ladder</h2>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Problem</th><th>Difficulty</th><th>Key Insight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Valid Palindrome (LC 125)</td><td><span class="badge b-green">Easy</span></td><td>Opposite-end, skip non-alphanumeric</td></tr>
+      <tr><td>2</td><td>Remove Duplicates from Sorted Array (LC 26)</td><td><span class="badge b-green">Easy</span></td><td>Fast/slow pointers, in-place write — covered above</td></tr>
+      <tr><td>3</td><td>Two Sum II (LC 167)</td><td><span class="badge b-yellow">Medium</span></td><td>Opposite-end on sorted array — covered in §2 Example 1</td></tr>
+      <tr><td>4</td><td>Container With Most Water (LC 11)</td><td><span class="badge b-yellow">Medium</span></td><td>Move shorter pointer — covered above</td></tr>
+      <tr><td>5</td><td>3Sum (LC 15)</td><td><span class="badge b-yellow">Medium</span></td><td>Sort + fix one element + two pointers for the pair</td></tr>
+      <tr><td>6</td><td>Trapping Rain Water (LC 42)</td><td><span class="badge b-red">Hard</span></td><td>Two pointers + running max from each side</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Learning Path</div>
+    <p>LC 42 (Trapping Rain Water) requires seeing that water above each bar is determined by the minimum of the maximum heights to its left and right — making it a strong test of whether the two-pointer mental model is truly internalized. Try deriving the O(n) solution from scratch before reading any solution.</p>
+  </div>
+
+  <hr class="divider"/>
+
+  <h3>Up Next — Post #3: Sliding Window</h3>
+  <p>Post #3 covers the sliding window technique — a specialization of same-direction two pointers that maintains a dynamic subarray satisfying a constraint. It handles problems where the window size is variable and shrinking from the left is triggered by a violation, rather than a simple fast/slow advance.</p>
+
+  <p style="color:var(--ink-faint); font-size:13px; margin-top:44px; font-style:italic;">
+    Interview Prep Series · Post #2 of 20
+  </p>
+
+</div>
+</main>
+
+<footer class="post-footer">
+  <strong>Interview Prep Series</strong> — Arrays & Hashing · Two Pointers · Sliding Window · Prefix Sum · Binary Search · and 15 more.
+  <p class="next-label">Next: Sliding Window →</p>
+</footer>
+
+</body>
+</html>
