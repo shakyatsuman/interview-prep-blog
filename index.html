@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interview Prep — Coding Patterns Series</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:       #0d1117;
+      --ink-soft:  #24292f;
+      --ink-faint: #656d76;
+      --paper:     #ffffff;
+      --rule:      #d0d7de;
+      --teal:      #0a6b6b;
+      --teal-lt:   #e8f5f5;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.7;
+    }
+
+    /* ── MASTHEAD ── */
+    .masthead {
+      border-bottom: 1px solid var(--rule);
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .masthead-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: var(--ink);
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+    .masthead-title {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-faint);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 88px 40px 72px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 48px;
+      align-items: start;
+    }
+    .hero-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--teal);
+    }
+    .hero-desc {
+      font-size: 17px;
+      font-weight: 300;
+      color: var(--ink-soft);
+      max-width: 520px;
+      margin-bottom: 32px;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .hero-meta span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+    }
+    .hero-stat {
+      text-align: right;
+    }
+    .hero-stat-num {
+      font-family: 'Lora', serif;
+      font-size: 4rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--ink);
+    }
+    .hero-stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-faint);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .hero-stat-sub {
+      font-size: 11px;
+      color: var(--rule);
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── DIVIDER ── */
+    .section-rule {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 40px;
+      border-top: 1px solid var(--rule);
+    }
+
+    /* ── POSTS GRID ── */
+    .posts-section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 56px 40px 80px;
+    }
+    .posts-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 32px;
+    }
+    .posts-section-title {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+    .posts-section-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--rule);
+    }
+
+    .post-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .post-card {
+      background: var(--paper);
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      align-items: center;
+      gap: 0;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.12s ease;
+    }
+    .post-card:hover { background: #f6f8fa; }
+    .post-card.coming-soon {
+      opacity: 0.45;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .post-num {
+      padding: 20px 0 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--rule);
+      letter-spacing: 0.06em;
+    }
+    .post-card:hover .post-num { color: var(--ink-faint); }
+
+    .post-body {
+      padding: 20px 24px;
+      border-left: 1px solid var(--rule);
+    }
+    .post-topic {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 4px;
+    }
+    .post-title {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .post-desc {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--ink-faint);
+      line-height: 1.5;
+    }
+
+    .post-meta {
+      padding: 20px 24px 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      min-width: 100px;
+    }
+    .post-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+    .status-live {
+      background: #dafbe1;
+      color: #1a7f37;
+    }
+    .status-soon {
+      background: #f6f8fa;
+      color: var(--ink-faint);
+    }
+    .post-read-time {
+      font-size: 11px;
+      color: var(--rule);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── COLOR ACCENTS per post ── */
+    .accent-1 { border-left: 3px solid #4a7aaf; }
+    .accent-2 { border-left: 3px solid #1a6b3c; }
+    .accent-3 { border-left: 3px solid #6a3a9f; }
+    .accent-4 { border-left: 3px solid #b06a00; }
+    .accent-5 { border-left: 3px solid #0a6b6b; }
+    .accent-soon { border-left: 3px solid var(--rule); }
+
+    /* ── COMING SOON SECTION ── */
+    .coming-section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+    }
+    .coming-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 32px;
+    }
+    .coming-card {
+      background: #fafbfc;
+      padding: 18px 20px;
+    }
+    .coming-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--rule);
+      margin-bottom: 6px;
+    }
+    .coming-title {
+      font-family: 'Lora', serif;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #c8d0d8;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 32px 40px;
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    footer p {
+      font-size: 12px;
+      color: var(--ink-faint);
+      font-weight: 300;
+    }
+    .footer-stack {
+      display: flex;
+      gap: 8px;
+    }
+    .stack-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-faint);
+      background: #f6f8fa;
+      border: 1px solid var(--rule);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .hero { grid-template-columns: 1fr; padding: 56px 24px 48px; }
+      .hero-stat { text-align: left; }
+      .posts-section, .coming-section { padding-left: 24px; padding-right: 24px; }
+      .coming-grid { grid-template-columns: repeat(2, 1fr); }
+      .masthead { padding: 16px 24px; }
+      footer { padding: 24px; }
+      .post-meta { min-width: 80px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Masthead -->
+  <header class="masthead">
+    <span class="masthead-badge">Series</span>
+    <span class="masthead-title">Interview Prep · Coding Patterns</span>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div>
+      <p class="hero-label">20-Post Series · Java 8</p>
+      <h1>Master the patterns.<br><em>Ace the interview.</em></h1>
+      <p class="hero-desc">A structured deep-dive into every coding interview pattern — from arrays and hashing to dynamic programming. Each post is a ~5 minute read with worked examples, diagrams, and a practice ladder.</p>
+      <div class="hero-meta">
+        <span>⏱ ~5 min per post</span>
+        <span>☕ Java 8</span>
+        <span>📈 Intermediate → Advanced</span>
+      </div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">20</div>
+      <div class="hero-stat-label">Posts</div>
+      <div class="hero-stat-sub">5 published</div>
+    </div>
+  </section>
+
+  <div class="section-rule"></div>
+
+  <!-- Published Posts -->
+  <section class="posts-section">
+    <div class="posts-section-header">
+      <span class="posts-section-title">Published</span>
+      <span class="posts-section-count">5 of 20</span>
+    </div>
+
+    <div class="post-list">
+
+      <a class="post-card accent-1" href="post-01-arrays-hashing.html">
+        <span class="post-num">#01</span>
+        <div class="post-body">
+          <div class="post-topic">Fundamentals</div>
+          <div class="post-title">Arrays & Hashing</div>
+          <div class="post-desc">O(1) lookup, frequency maps, complement patterns. The foundation every other technique builds on.</div>
+        </div>
+        <div class="post-meta">
+          <span class="post-status status-live">Live</span>
+          <span class="post-read-time">5 min</span>
+        </div>
+      </a>
+
+      <a class="post-card accent-2" href="post-02-two-pointers.html">
+        <span class="post-num">#02</span>
+        <div class="post-body">
+          <div class="post-topic">Arrays</div>
+          <div class="post-title">Two Pointers</div>
+          <div class="post-desc">Opposite-end and fast/slow same-direction pointers. Reduces O(n²) pair searches to O(n).</div>
+        </div>
+        <div class="post-meta">
+          <span class="post-status status-live">Live</span>
+          <span class="post-read-time">5 min</span>
+        </div>
+      </a>
+
+      <a class="post-card accent-3" href="post-03-sliding-window.html">
+        <span class="post-num">#03</span>
+        <div class="post-body">
+          <div class="post-topic">Arrays · Strings</div>
+          <div class="post-title">Sliding Window</div>
+          <div class="post-desc">Fixed and variable windows over contiguous subarrays. Every element enters and exits at most once — O(n).</div>
+        </div>
+        <div class="post-meta">
+          <span class="post-status status-live">Live</span>
+          <span class="post-read-time">5 min</span>
+        </div>
+      </a>
+
+      <a class="post-card accent-4" href="post-04-prefix-sum.html">
+        <span class="post-num">#04</span>
+        <div class="post-body">
+          <div class="post-topic">Arrays</div>
+          <div class="post-title">Prefix Sum</div>
+          <div class="post-desc">Precompute once, query in O(1). Transforms repeated range scans into a single subtraction.</div>
+        </div>
+        <div class="post-meta">
+          <span class="post-status status-live">Live</span>
+          <span class="post-read-time">5 min</span>
+        </div>
+      </a>
+
+      <a class="post-card accent-5" href="post-05-binary-search.html">
+        <span class="post-num">#05</span>
+        <div class="post-body">
+          <div class="post-topic">Search</div>
+          <div class="post-title">Binary Search</div>
+          <div class="post-desc">Eliminate half the search space on every step. Classic O(log n) and the search space reduction generalization.</div>
+        </div>
+        <div class="post-meta">
+          <span class="post-status status-live">Live</span>
+          <span class="post-read-time">5 min</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <div class="section-rule"></div>
+
+  <!-- Coming Soon -->
+  <section class="coming-section">
+    <div class="posts-section-header">
+      <span class="posts-section-title">Coming Soon</span>
+      <span class="posts-section-count">15 remaining</span>
+    </div>
+
+    <div class="coming-grid">
+      <div class="coming-card"><div class="coming-num">#06</div><div class="coming-title">Sorting Strategies</div></div>
+      <div class="coming-card"><div class="coming-num">#07</div><div class="coming-title">Linked Lists</div></div>
+      <div class="coming-card"><div class="coming-num">#08</div><div class="coming-title">Intervals</div></div>
+      <div class="coming-card"><div class="coming-num">#09</div><div class="coming-title">Stacks & Queues</div></div>
+      <div class="coming-card"><div class="coming-num">#10</div><div class="coming-title">Trees & DFS + BST</div></div>
+      <div class="coming-card"><div class="coming-num">#11</div><div class="coming-title">Trees & BFS</div></div>
+      <div class="coming-card"><div class="coming-num">#12</div><div class="coming-title">Tries</div></div>
+      <div class="coming-card"><div class="coming-num">#13</div><div class="coming-title">Heaps & Top K</div></div>
+      <div class="coming-card"><div class="coming-num">#14</div><div class="coming-title">Backtracking</div></div>
+      <div class="coming-card"><div class="coming-num">#15</div><div class="coming-title">Graphs</div></div>
+      <div class="coming-card"><div class="coming-num">#16</div><div class="coming-title">Advanced Graphs</div></div>
+      <div class="coming-card"><div class="coming-num">#17</div><div class="coming-title">Greedy</div></div>
+      <div class="coming-card"><div class="coming-num">#18</div><div class="coming-title">Dynamic Programming I</div></div>
+      <div class="coming-card"><div class="coming-num">#19</div><div class="coming-title">Dynamic Programming II</div></div>
+      <div class="coming-card"><div class="coming-num">#20</div><div class="coming-title">Bit Manipulation</div></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>Interview Prep Series · 20 posts · Updated as new posts publish</p>
+    <div class="footer-stack">
+      <span class="stack-tag">Java 8</span>
+      <span class="stack-tag">~5 min reads</span>
+      <span class="stack-tag">Intermediate → Advanced</span>
+    </div>
+  </footer>
+
+</body>
+</html>
