@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arrays & Hashing — Interview Prep Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:        #0f1923;
+      --ink-soft:   #2e3f50;
+      --ink-faint:  #6b7c8d;
+      --paper:      #f7f5f0;
+      --paper-warm: #edeae1;
+      --accent:     #b5460f;
+      --accent-alt: #1d6fa4;
+      --highlight:  #e8c547;
+      --green:      #0e7c5b;
+      --code-bg:    #0f1923;
+      --code-fg:    #cdd9e5;
+      --border:     #d8d4cb;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 17px;
+      line-height: 1.8;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 72px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--highlight), var(--accent-alt));
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--highlight);
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(2rem, 5.5vw, 3.4rem);
+      font-weight: 700;
+      line-height: 1.15;
+      max-width: 680px;
+      margin: 0 auto 16px;
+      letter-spacing: -0.01em;
+    }
+    .hero-sub {
+      color: #8a9db0;
+      font-size: 15px;
+      font-weight: 300;
+      max-width: 520px;
+      margin: 0 auto 36px;
+    }
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #5a6e80;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+    .post-body { padding: 60px 24px 96px; }
+
+    /* ── TYPOGRAPHY ── */
+    h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 52px 0 14px;
+      line-height: 1.25;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--accent-alt);
+      margin: 32px 0 8px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+    p { margin-bottom: 16px; color: var(--ink-soft); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--paper-warm);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 5px 5px 0;
+    }
+    .callout-tip  { border-left-color: var(--green); }
+    .callout-note { border-left-color: var(--accent-alt); }
+    .callout-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 5px;
+    }
+    .callout-tip  .callout-label { color: var(--green); }
+    .callout-note .callout-label { color: var(--accent-alt); }
+    .callout p { margin: 0; font-size: 15px; }
+
+    /* ── CODE ── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-fg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      padding: 26px 28px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 20px 0 28px;
+      position: relative;
+    }
+    pre .lang { position: absolute; top: 10px; right: 14px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #3a5068; }
+    .kw  { color: #79b8ff; }
+    .fn  { color: #b392f0; }
+    .cm  { color: #444d56; font-style: italic; }
+    .str { color: #f1c075; }
+    .num { color: #f97583; }
+    .tp  { color: #85e89d; }
+    .var { color: #cdd9e5; }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.83em;
+      background: var(--paper-warm);
+      border: 1px solid var(--border);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+
+    /* ── DIAGRAMS ── */
+    .diagram-wrap {
+      margin: 32px 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px 16px 20px;
+      text-align: center;
+      box-shadow: 0 1px 12px rgba(0,0,0,0.05);
+    }
+    .diagram-caption {
+      font-size: 12.5px;
+      color: var(--ink-faint);
+      margin-top: 14px;
+      font-style: italic;
+    }
+
+    /* ── TABLE ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .data-table th {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 9px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .data-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink-soft);
+      font-weight: 300;
+    }
+    .data-table tr:nth-child(even) td { background: var(--paper-warm); }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+    }
+    .b-green  { background: #d4f0e4; color: #0a6e46; }
+    .b-yellow { background: #fdf0c8; color: #8a6000; }
+    .b-red    { background: #fde4e4; color: #a01010; }
+
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    /* ── FOOTER ── */
+    .post-footer {
+      background: var(--ink);
+      color: #4a6070;
+      text-align: center;
+      padding: 44px 24px;
+      font-size: 13px;
+    }
+    .post-footer strong { color: #8a9db0; }
+    .next-label { margin-top: 10px; color: var(--highlight); font-style: italic; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">Interview Prep Series · Post #1 of 20</div>
+  <h1>Arrays &amp; Hashing</h1>
+  <p class="hero-sub">The universal prerequisite. Every pattern in this series relies on manipulating arrays and exploiting hash-based lookups — master these first.</p>
+  <div class="hero-meta">
+    <span>⏱ 5 min read</span>
+    <span>☕ Fundamentals</span>
+    <span>🔑 Java 8</span>
+    <span>📈 Intermediate → Advanced</span>
+  </div>
+</header>
+
+<main class="post-body">
+<div class="container">
+
+  <p>Arrays and hash maps are the bedrock of technical interviews. Individually they are simple structures; together they produce a transformation that appears in dozens of interview problems: a brute-force O(n²) or O(n log n) solution collapses to O(n) the moment you trade space for a hash-indexed lookup. Recognizing when and how to apply that trade is the foundational skill this post develops.</p>
+
+
+
+  <!-- ── 1. ARRAYS ── -->
+  <h2>Arrays — Complexity Foundations</h2>
+  <p>An array is a contiguous block of memory. Its defining property is <strong>O(1) random access</strong> — given an index, the CPU computes the address in a single instruction. Everything else flows from this.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 130" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .am { font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:600; }
+          .al { font-family:'Source Sans 3',sans-serif; font-size:11.5px; fill:#6b7c8d; }
+          .aa { font-family:'JetBrains Mono',monospace; font-size:11px; fill:#9aafbf; }
+        </style>
+      </defs>
+      <!-- Memory address row -->
+      <text x="44"  y="18" class="aa">0x00</text>
+      <text x="124" y="18" class="aa">0x04</text>
+      <text x="204" y="18" class="aa">0x08</text>
+      <text x="284" y="18" class="aa">0x0C</text>
+      <text x="364" y="18" class="aa">0x10</text>
+      <text x="444" y="18" class="aa">0x14</text>
+      <text x="524" y="18" class="aa">0x18</text>
+
+      <!-- Cells -->
+      <rect x="28"  y="26" width="68" height="50" rx="4" fill="#1d6fa4" opacity="0.15" stroke="#1d6fa4" stroke-width="1.2"/>
+      <rect x="108" y="26" width="68" height="50" rx="4" fill="#1d6fa4" opacity="0.15" stroke="#1d6fa4" stroke-width="1.2"/>
+      <rect x="188" y="26" width="68" height="50" rx="4" fill="#1d6fa4" opacity="0.15" stroke="#1d6fa4" stroke-width="1.2"/>
+      <rect x="268" y="26" width="68" height="50" rx="4" fill="#b5460f" opacity="0.18" stroke="#b5460f" stroke-width="1.8"/>
+      <rect x="348" y="26" width="68" height="50" rx="4" fill="#1d6fa4" opacity="0.15" stroke="#1d6fa4" stroke-width="1.2"/>
+      <rect x="428" y="26" width="68" height="50" rx="4" fill="#1d6fa4" opacity="0.15" stroke="#1d6fa4" stroke-width="1.2"/>
+      <rect x="508" y="26" width="68" height="50" rx="4" fill="#1d6fa4" opacity="0.15" stroke="#1d6fa4" stroke-width="1.2"/>
+
+      <!-- Values -->
+      <text x="62"  y="57" class="am" fill="#1d6fa4" text-anchor="middle">14</text>
+      <text x="142" y="57" class="am" fill="#1d6fa4" text-anchor="middle">3</text>
+      <text x="222" y="57" class="am" fill="#1d6fa4" text-anchor="middle">91</text>
+      <text x="302" y="57" class="am" fill="#b5460f" text-anchor="middle">47</text>
+      <text x="382" y="57" class="am" fill="#1d6fa4" text-anchor="middle">8</text>
+      <text x="462" y="57" class="am" fill="#1d6fa4" text-anchor="middle">25</text>
+      <text x="542" y="57" class="am" fill="#1d6fa4" text-anchor="middle">60</text>
+
+      <!-- Index labels -->
+      <text x="62"  y="87" class="al" text-anchor="middle">[0]</text>
+      <text x="142" y="87" class="al" text-anchor="middle">[1]</text>
+      <text x="222" y="87" class="al" text-anchor="middle">[2]</text>
+      <text x="302" y="87" class="al" text-anchor="middle">[3]</text>
+      <text x="382" y="87" class="al" text-anchor="middle">[4]</text>
+      <text x="462" y="87" class="al" text-anchor="middle">[5]</text>
+      <text x="542" y="87" class="al" text-anchor="middle">[6]</text>
+
+      <!-- O(1) annotation -->
+      <line x1="302" y1="94" x2="302" y2="108" stroke="#b5460f" stroke-width="1.2"/>
+      <text x="302" y="122" class="al" text-anchor="middle" fill="#b5460f">arr[3] → O(1) access</text>
+    </svg>
+    <p class="diagram-caption">Fig 1. Contiguous memory layout. Index-to-address calculation is constant time regardless of array size.</p>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Access by index</td><td><span class="badge b-green">O(1)</span></td><td>Direct memory address calculation</td></tr>
+      <tr><td>Search (unsorted)</td><td><span class="badge b-red">O(n)</span></td><td>Must scan every element in worst case</td></tr>
+      <tr><td>Search (sorted)</td><td><span class="badge b-yellow">O(log n)</span></td><td>Binary search — covered in Post #5</td></tr>
+      <tr><td>Insert / delete (end)</td><td><span class="badge b-green">O(1)</span></td><td>Amortised for <code>ArrayList</code></td></tr>
+      <tr><td>Insert / delete (middle)</td><td><span class="badge b-red">O(n)</span></td><td>Requires shifting all subsequent elements</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 2. HASH MAPS ── -->
+  <h2>Hash Maps — The O(1) Lookup Engine</h2>
+  <p>A <code>HashMap&lt;K, V&gt;</code> maps keys to values in expected O(1) time for both reads and writes. Internally it maintains an array of <em>buckets</em>. A <strong>hash function</strong> converts the key into an integer index, determining which bucket stores the entry.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 210" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .hm { font-family:'JetBrains Mono',monospace; font-size:13px; }
+          .hl { font-family:'Source Sans 3',sans-serif; font-size:12px; fill:#6b7c8d; }
+          .hb { font-family:'Source Sans 3',sans-serif; font-size:11px; fill:#6b7c8d; }
+        </style>
+        <marker id="arrowH" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#1d6fa4"/>
+        </marker>
+      </defs>
+
+      <!-- Keys on left -->
+      <text x="10" y="28" class="hl" font-weight="600">Keys</text>
+      <rect x="10"  y="36"  width="100" height="28" rx="4" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+      <rect x="10"  y="76"  width="100" height="28" rx="4" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+      <rect x="10"  y="116" width="100" height="28" rx="4" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+      <rect x="10"  y="156" width="100" height="28" rx="4" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+      <text x="60"  y="55"  class="hm" fill="#0f1923" text-anchor="middle">"apple"</text>
+      <text x="60"  y="95"  class="hm" fill="#0f1923" text-anchor="middle">"grape"</text>
+      <text x="60"  y="135" class="hm" fill="#0f1923" text-anchor="middle">"kiwi"</text>
+      <text x="60"  y="175" class="hm" fill="#0f1923" text-anchor="middle">"mango"</text>
+
+      <!-- Hash function box -->
+      <rect x="160" y="86" width="130" height="48" rx="6" fill="#1d6fa4" opacity="0.12" stroke="#1d6fa4" stroke-width="1.4"/>
+      <text x="225" y="107" class="hl" text-anchor="middle" fill="#1d6fa4" font-weight="600">hash(key)</text>
+      <text x="225" y="123" class="hb" text-anchor="middle">% buckets</text>
+
+      <!-- Arrows from keys to hash fn -->
+      <line x1="110" y1="50"  x2="158" y2="105" stroke="#1d6fa4" stroke-width="1.2" marker-end="url(#arrowH)" opacity="0.5"/>
+      <line x1="110" y1="90"  x2="158" y2="107" stroke="#1d6fa4" stroke-width="1.2" marker-end="url(#arrowH)"/>
+      <line x1="110" y1="130" x2="158" y2="113" stroke="#1d6fa4" stroke-width="1.2" marker-end="url(#arrowH)" opacity="0.5"/>
+      <line x1="110" y1="170" x2="158" y2="118" stroke="#1d6fa4" stroke-width="1.2" marker-end="url(#arrowH)" opacity="0.5"/>
+
+      <!-- Buckets on right -->
+      <text x="370" y="28" class="hl" font-weight="600">Buckets (array)</text>
+      <rect x="370" y="36"  width="130" height="28" rx="4" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+      <rect x="370" y="72"  width="130" height="28" rx="4" fill="#0e7c5b" opacity="0.12" stroke="#0e7c5b" stroke-width="1.4"/>
+      <rect x="370" y="108" width="130" height="28" rx="4" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+      <rect x="370" y="144" width="130" height="28" rx="4" fill="#0e7c5b" opacity="0.12" stroke="#0e7c5b" stroke-width="1.4"/>
+      <rect x="370" y="180" width="130" height="28" rx="4" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+
+      <text x="410" y="54"  class="hb" fill="#9aafbf">[0] empty</text>
+      <text x="410" y="90"  class="hm" fill="#0e7c5b" font-size="12">[1] "apple"→5</text>
+      <text x="410" y="126" class="hb" fill="#9aafbf">[2] empty</text>
+      <text x="410" y="162" class="hm" fill="#0e7c5b" font-size="12">[3] "grape"→12</text>
+      <text x="410" y="198" class="hb" fill="#9aafbf">[4] empty</text>
+
+      <!-- Arrows from hash fn to buckets -->
+      <line x1="290" y1="100" x2="368" y2="82" stroke="#1d6fa4" stroke-width="1.2" marker-end="url(#arrowH)"/>
+      <line x1="290" y1="114" x2="368" y2="156" stroke="#1d6fa4" stroke-width="1.2" marker-end="url(#arrowH)" opacity="0.6"/>
+
+      <!-- O(1) label -->
+      <text x="520" y="28" class="hb" fill="#0e7c5b" font-weight="600">Expected O(1)</text>
+      <text x="520" y="42" class="hb" fill="#9aafbf">per operation</text>
+    </svg>
+    <p class="diagram-caption">Fig 2. Hash map internals. The hash function maps any key to a bucket index in constant time, enabling O(1) average-case get and put.</p>
+  </div>
+
+  <h3>Collision Handling</h3>
+  <p>Two distinct keys may hash to the same bucket — a <strong>collision</strong>. Java's <code>HashMap</code> handles this via <em>separate chaining</em>: each bucket holds a linked list (or, since Java 8, a balanced tree when the chain exceeds 8 nodes). In the average case collisions are rare, preserving O(1) performance; in the pathological worst case (all keys collide) operations degrade to O(n).</p>
+
+  <table class="data-table">
+    <thead><tr><th>Operation</th><th>Average</th><th>Worst Case</th></tr></thead>
+    <tbody>
+      <tr><td><code>put(k, v)</code></td><td><span class="badge b-green">O(1)</span></td><td><span class="badge b-red">O(n)</span></td></tr>
+      <tr><td><code>get(k)</code></td><td><span class="badge b-green">O(1)</span></td><td><span class="badge b-red">O(n)</span></td></tr>
+      <tr><td><code>containsKey(k)</code></td><td><span class="badge b-green">O(1)</span></td><td><span class="badge b-red">O(n)</span></td></tr>
+      <tr><td><code>remove(k)</code></td><td><span class="badge b-green">O(1)</span></td><td><span class="badge b-red">O(n)</span></td></tr>
+      <tr><td>Space</td><td colspan="2"><span class="badge b-yellow">O(n)</span> — proportional to number of entries</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-note">
+    <div class="callout-label">Interview Context</div>
+    <p>Interviewers expect you to cite O(1) average when discussing hash maps. If probed on worst case, mention collisions and Java 8's treeification fallback — this signals genuine understanding of the underlying structure.</p>
+  </div>
+
+  <!-- ── 3. HASH SETS ── -->
+  <h2>HashSet — Membership in O(1)</h2>
+  <p>A <code>HashSet&lt;E&gt;</code> is a <code>HashMap</code> whose values are a dummy sentinel — it stores keys only, providing O(1) average-case <code>contains</code>, <code>add</code>, and <code>remove</code>. Use it when you need fast membership testing and do not require associated values.</p>
+
+<pre><span class="lang">Java 8</span><span class="tp">HashSet</span>&lt;<span class="tp">Integer</span>&gt; seen = <span class="kw">new</span> <span class="tp">HashSet</span>&lt;&gt;();
+
+seen.<span class="fn">add</span>(<span class="num">7</span>);          <span class="cm">// O(1) — insert</span>
+seen.<span class="fn">contains</span>(<span class="num">7</span>);     <span class="cm">// O(1) — membership test → true</span>
+seen.<span class="fn">remove</span>(<span class="num">7</span>);       <span class="cm">// O(1) — delete</span></pre>
+
+  <!-- ── 4. THE CORE PATTERN ── -->
+  <h2>The Core Pattern: Trading Space for Time</h2>
+  <p>The central technique of this post is straightforward: <strong>pre-process an array into a hash structure, then answer queries against that structure in O(1)</strong> rather than scanning the array repeatedly. The result is a reduction from O(n²) to O(n) at the cost of O(n) auxiliary space.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 120" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <marker id="arrowP" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#b5460f"/>
+        </marker>
+      </defs>
+      <!-- Box 1 -->
+      <rect x="10" y="30" width="160" height="56" rx="6" fill="#edeae1" stroke="#d8d4cb" stroke-width="1.2"/>
+      <text x="90" y="55" font-family="Source Sans 3,sans-serif" font-size="13" font-weight="600" fill="#0f1923" text-anchor="middle">Input Array</text>
+      <text x="90" y="75" font-family="JetBrains Mono,monospace" font-size="12" fill="#6b7c8d" text-anchor="middle">[14, 3, 91, 47, 8]</text>
+
+      <!-- Arrow 1 -->
+      <line x1="172" y1="58" x2="238" y2="58" stroke="#b5460f" stroke-width="1.5" marker-end="url(#arrowP)"/>
+      <text x="205" y="50" font-family="Source Sans 3,sans-serif" font-size="11" fill="#b5460f" text-anchor="middle">O(n)</text>
+      <text x="205" y="72" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9aafbf" text-anchor="middle">one pass</text>
+
+      <!-- Box 2 -->
+      <rect x="240" y="30" width="170" height="56" rx="6" fill="#1d6fa4" opacity="0.10" stroke="#1d6fa4" stroke-width="1.4"/>
+      <text x="325" y="55" font-family="Source Sans 3,sans-serif" font-size="13" font-weight="600" fill="#1d6fa4" text-anchor="middle">Hash Structure</text>
+      <text x="325" y="74" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#1d6fa4" text-anchor="middle">HashMap / HashSet</text>
+
+      <!-- Arrow 2 -->
+      <line x1="412" y1="58" x2="478" y2="58" stroke="#b5460f" stroke-width="1.5" marker-end="url(#arrowP)"/>
+      <text x="445" y="50" font-family="Source Sans 3,sans-serif" font-size="11" fill="#b5460f" text-anchor="middle">O(1)</text>
+      <text x="445" y="72" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9aafbf" text-anchor="middle">per query</text>
+
+      <!-- Box 3 -->
+      <rect x="480" y="30" width="160" height="56" rx="6" fill="#0e7c5b" opacity="0.10" stroke="#0e7c5b" stroke-width="1.4"/>
+      <text x="560" y="55" font-family="Source Sans 3,sans-serif" font-size="13" font-weight="600" fill="#0e7c5b" text-anchor="middle">Query Answer</text>
+      <text x="560" y="74" font-family="Source Sans 3,sans-serif" font-size="12" fill="#0e7c5b" text-anchor="middle">in O(1) time</text>
+    </svg>
+    <p class="diagram-caption">Fig 3. The two-phase pattern: one O(n) pass to build the hash structure, then O(1) lookups to answer queries. Total complexity: O(n).</p>
+  </div>
+
+  <!-- ── EXAMPLE 1 ── -->
+  <h2>Example 1 — Two Sum</h2>
+  <p><em>LeetCode #1 · Difficulty: Easy</em></p>
+  <p>Given an integer array <code>nums</code> and a target integer <code>target</code>, return the indices of the two numbers that add up to <code>target</code>. Exactly one solution exists; the same element may not be used twice.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>nums = [2, 7, 11, 15], target = 9</code> → <strong>[0, 1]</strong> because <code>nums[0] + nums[1] = 2 + 7 = 9</code></p>
+  </div>
+
+  <h3>Brute Force — O(n²)</h3>
+  <p>Check every pair. For each element at index <code>i</code>, scan every element at index <code>j &gt; i</code> to see if they sum to <code>target</code>.</p>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span>[] <span class="fn">twoSumBrute</span>(<span class="kw">int</span>[] nums, <span class="kw">int</span> target) {
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {
+        <span class="kw">for</span> (<span class="kw">int</span> j = i + <span class="num">1</span>; j &lt; nums.length; j++) {
+            <span class="kw">if</span> (nums[i] + nums[j] == target) {
+                <span class="kw">return new int</span>[] { i, j };
+            }
+        }
+    }
+    <span class="kw">return new int</span>[] {};   <span class="cm">// guaranteed not reached per problem constraints</span>
+}
+<span class="cm">// Time: O(n²)  |  Space: O(1)</span></pre>
+
+  <h3>Optimized — O(n) with HashMap</h3>
+  <p>For each element <code>nums[i]</code>, the required complement is <code>target - nums[i]</code>. Store each element's index in a <code>HashMap</code> as you iterate. Before inserting, check whether the complement already exists in the map — if it does, the pair is found.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 210" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>.ds { font-family:'Source Sans 3',sans-serif; font-size:12px; fill:#6b7c8d; }
+               .dm { font-family:'JetBrains Mono',monospace; font-size:13px; }
+               .db { font-family:'Source Sans 3',sans-serif; font-size:11.5px; }</style>
+        <marker id="arrowD" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#b5460f"/>
+        </marker>
+      </defs>
+
+      <!-- Array cells: [2, 7, 11, 15], target=9 -->
+      <text x="10" y="22" class="ds" font-weight="600">nums = [2, 7, 11, 15]   target = 9</text>
+
+      <rect x="10"  y="30" width="62" height="44" rx="5" fill="#0e7c5b" opacity="0.15" stroke="#0e7c5b" stroke-width="1.4"/>
+      <rect x="80"  y="30" width="62" height="44" rx="5" fill="#0e7c5b" opacity="0.15" stroke="#0e7c5b" stroke-width="1.4"/>
+      <rect x="150" y="30" width="62" height="44" rx="5" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+      <rect x="220" y="30" width="62" height="44" rx="5" fill="#edeae1" stroke="#d8d4cb" stroke-width="1"/>
+
+      <text x="41"  y="57" class="dm" fill="#0e7c5b" text-anchor="middle">2</text>
+      <text x="111" y="57" class="dm" fill="#0e7c5b" text-anchor="middle">7</text>
+      <text x="181" y="57" class="dm" fill="#6b7c8d" text-anchor="middle">11</text>
+      <text x="251" y="57" class="dm" fill="#6b7c8d" text-anchor="middle">15</text>
+      <text x="41"  y="86" class="db" fill="#9aafbf" text-anchor="middle">[0]</text>
+      <text x="111" y="86" class="db" fill="#9aafbf" text-anchor="middle">[1]</text>
+      <text x="181" y="86" class="db" fill="#9aafbf" text-anchor="middle">[2]</text>
+      <text x="251" y="86" class="db" fill="#9aafbf" text-anchor="middle">[3]</text>
+
+      <!-- Step labels -->
+      <text x="10"  y="108" class="db" fill="#b5460f" font-weight="600">i=0: val=2, complement=7</text>
+      <text x="10"  y="122" class="db" fill="#6b7c8d">map.containsKey(7)? No → map.put(2, 0)</text>
+      <text x="10"  y="140" class="db" fill="#b5460f" font-weight="600">i=1: val=7, complement=2</text>
+      <text x="10"  y="154" class="db" fill="#0e7c5b">map.containsKey(2)? ✓ Yes → return [map.get(2), 1] = [0, 1]</text>
+
+      <!-- HashMap state box -->
+      <rect x="390" y="95" width="255" height="80" rx="6" fill="#1d6fa4" opacity="0.08" stroke="#1d6fa4" stroke-width="1.2"/>
+      <text x="517" y="115" class="ds" text-anchor="middle" fill="#1d6fa4" font-weight="600">HashMap state after i=0</text>
+      <text x="517" y="135" class="dm" fill="#1d6fa4" text-anchor="middle" font-size="12">{ 2 → 0 }</text>
+      <text x="517" y="155" class="db" fill="#9aafbf" text-anchor="middle">key=value, value=index</text>
+
+      <!-- Result -->
+      <rect x="390" y="185" width="255" height="30" rx="5" fill="#0e7c5b" opacity="0.12" stroke="#0e7c5b" stroke-width="1.2"/>
+      <text x="517" y="205" class="dm" fill="#0e7c5b" text-anchor="middle" font-size="12">Result: [0, 1]  ✓</text>
+    </svg>
+    <p class="diagram-caption">Fig 4. Two Sum with HashMap. At i=1, complement 2 is found in the map immediately — no inner loop needed.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span>[] <span class="fn">twoSum</span>(<span class="kw">int</span>[] nums, <span class="kw">int</span> target) {
+    <span class="tp">Map</span>&lt;<span class="tp">Integer</span>, <span class="tp">Integer</span>&gt; map = <span class="kw">new</span> <span class="tp">HashMap</span>&lt;&gt;(); <span class="cm">// value → index</span>
+
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {
+        <span class="kw">int</span> complement = target - nums[i];
+
+        <span class="kw">if</span> (map.<span class="fn">containsKey</span>(complement)) {
+            <span class="kw">return new int</span>[] { map.<span class="fn">get</span>(complement), i }; <span class="cm">// found</span>
+        }
+
+        map.<span class="fn">put</span>(nums[i], i); <span class="cm">// store current element for future lookups</span>
+    }
+
+    <span class="kw">return new int</span>[] {}; <span class="cm">// unreachable per problem guarantee</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(n)</span></pre>
+
+  <!-- ── EXAMPLE 2 ── -->
+  <h2>Example 2 — Group Anagrams</h2>
+  <p><em>LeetCode #49 · Difficulty: Medium</em></p>
+  <p>Given an array of strings, group the anagrams together. The order of groups and order within groups does not matter.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>["eat","tea","tan","ate","nat","bat"]</code> → <code>[["eat","tea","ate"], ["tan","nat"], ["bat"]]</code></p>
+  </div>
+
+  <p>The key insight: two strings are anagrams if and only if their <strong>sorted character sequences are identical</strong>. Use the sorted string as a HashMap key to group all anagrams together in a single pass.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 215" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .gs { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .gm { font-family:'JetBrains Mono',monospace; font-size:12.5px; }
+        </style>
+      </defs>
+
+      <!-- Words -->
+      <text x="10" y="18" class="gs" fill="#6b7c8d" font-weight="600">Input strings</text>
+      <text x="200" y="18" class="gs" fill="#6b7c8d" font-weight="600">Sort chars → key</text>
+      <text x="420" y="18" class="gs" fill="#6b7c8d" font-weight="600">HashMap groups</text>
+
+      <!-- Row 1: eat -->
+      <rect x="10" y="26" width="70" height="26" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2"/>
+      <text x="45" y="44" class="gm" fill="#b5460f" text-anchor="middle">"eat"</text>
+      <line x1="82" y1="39" x2="190" y2="39" stroke="#b5460f" stroke-width="1" stroke-dasharray="4"/>
+      <rect x="192" y="26" width="70" height="26" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2"/>
+      <text x="227" y="44" class="gm" fill="#b5460f" text-anchor="middle">"aet"</text>
+
+      <!-- Row 2: tea -->
+      <rect x="10" y="60" width="70" height="26" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2"/>
+      <text x="45" y="78" class="gm" fill="#b5460f" text-anchor="middle">"tea"</text>
+      <line x1="82" y1="73" x2="190" y2="40" stroke="#b5460f" stroke-width="1" stroke-dasharray="4"/>
+
+      <!-- Row 3: ate -->
+      <rect x="10" y="94" width="70" height="26" rx="4" fill="#b5460f" opacity="0.12" stroke="#b5460f" stroke-width="1.2"/>
+      <text x="45" y="112" class="gm" fill="#b5460f" text-anchor="middle">"ate"</text>
+      <line x1="82" y1="107" x2="190" y2="42" stroke="#b5460f" stroke-width="1" stroke-dasharray="4"/>
+
+      <!-- Row 4: tan -->
+      <rect x="10" y="128" width="70" height="26" rx="4" fill="#1d6fa4" opacity="0.12" stroke="#1d6fa4" stroke-width="1.2"/>
+      <text x="45" y="146" class="gm" fill="#1d6fa4" text-anchor="middle">"tan"</text>
+      <line x1="82" y1="141" x2="190" y2="95" stroke="#1d6fa4" stroke-width="1" stroke-dasharray="4"/>
+      <rect x="192" y="60" width="70" height="26" rx="4" fill="#1d6fa4" opacity="0.12" stroke="#1d6fa4" stroke-width="1.2"/>
+      <text x="227" y="78" class="gm" fill="#1d6fa4" text-anchor="middle">"ant"</text>
+
+      <!-- Row 5: nat -->
+      <rect x="10" y="162" width="70" height="26" rx="4" fill="#1d6fa4" opacity="0.12" stroke="#1d6fa4" stroke-width="1.2"/>
+      <text x="45" y="180" class="gm" fill="#1d6fa4" text-anchor="middle">"nat"</text>
+      <line x1="82" y1="175" x2="190" y2="76" stroke="#1d6fa4" stroke-width="1" stroke-dasharray="4"/>
+
+      <!-- HashMap result -->
+      <rect x="420" y="26" width="225" height="56" rx="5" fill="#b5460f" opacity="0.08" stroke="#b5460f" stroke-width="1.2"/>
+      <text x="435" y="46" class="gm" fill="#b5460f" font-size="12">"aet" →</text>
+      <text x="435" y="64" class="gm" fill="#b5460f" font-size="12">  ["eat","tea","ate"]</text>
+
+      <rect x="420" y="92" width="225" height="98" rx="5" fill="#1d6fa4" opacity="0.08" stroke="#1d6fa4" stroke-width="1.2"/>
+      <text x="435" y="112" class="gm" fill="#1d6fa4" font-size="12">"ant" →</text>
+      <text x="435" y="130" class="gm" fill="#1d6fa4" font-size="12">  ["tan","nat"]</text>
+    </svg>
+    <p class="diagram-caption">Fig 5. Sorted string as HashMap key. All anagram variants of "eat" sort to "aet" — a single key groups them automatically.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public</span> <span class="tp">List</span>&lt;<span class="tp">List</span>&lt;<span class="tp">String</span>&gt;&gt; <span class="fn">groupAnagrams</span>(<span class="tp">String</span>[] strs) {
+    <span class="tp">Map</span>&lt;<span class="tp">String</span>, <span class="tp">List</span>&lt;<span class="tp">String</span>&gt;&gt; map = <span class="kw">new</span> <span class="tp">HashMap</span>&lt;&gt;();
+
+    <span class="kw">for</span> (<span class="tp">String</span> s : strs) {
+        <span class="kw">char</span>[] chars = s.<span class="fn">toCharArray</span>();
+        <span class="tp">Arrays</span>.<span class="fn">sort</span>(chars);               <span class="cm">// sort chars to form the canonical key</span>
+        <span class="tp">String</span> key = <span class="kw">new</span> <span class="tp">String</span>(chars);
+
+        <span class="cm">// getOrDefault avoids a null check on first insertion</span>
+        map.<span class="fn">getOrDefault</span>(key, <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;());
+        map.<span class="fn">putIfAbsent</span>(key, <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;());
+        map.<span class="fn">get</span>(key).<span class="fn">add</span>(s);
+    }
+
+    <span class="kw">return new</span> <span class="tp">ArrayList</span>&lt;&gt;(map.<span class="fn">values</span>());
+}
+<span class="cm">// Time: O(n · k log k)  where k = max string length (sort cost per string)</span>
+<span class="cm">// Space: O(n · k)  — storing all characters across all strings</span></pre>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Optimization</div>
+    <p>Sorting each string costs O(k log k). For a fixed 26-character lowercase alphabet, you can instead build a <strong>frequency count array of length 26</strong> as the key — reducing per-string work to O(k). The key becomes a string like <code>"1#0#0#...#1#0"</code> using a delimiter to prevent ambiguity.</p>
+  </div>
+
+  <!-- ── TEMPLATE ── -->
+  <h2>Universal Template</h2>
+  <p>The two canonical forms of the arrays-and-hashing pattern:</p>
+
+<pre><span class="lang">Java 8 — Frequency Map</span><span class="cm">// Pattern A: count occurrences of each element</span>
+<span class="tp">Map</span>&lt;<span class="tp">Integer</span>, <span class="tp">Integer</span>&gt; freq = <span class="kw">new</span> <span class="tp">HashMap</span>&lt;&gt;();
+<span class="kw">for</span> (<span class="kw">int</span> num : nums) {
+    freq.<span class="fn">put</span>(num, freq.<span class="fn">getOrDefault</span>(num, <span class="num">0</span>) + <span class="num">1</span>); <span class="cm">// increment count</span>
+}</pre>
+
+<pre><span class="lang">Java 8 — Complement / Existence Map</span><span class="cm">// Pattern B: check if a complement/pair exists while iterating</span>
+<span class="tp">Map</span>&lt;<span class="tp">Integer</span>, <span class="tp">Integer</span>&gt; map = <span class="kw">new</span> <span class="tp">HashMap</span>&lt;&gt;(); <span class="cm">// value → index (or any metadata)</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {
+    <span class="kw">int</span> complement = target - nums[i];
+    <span class="kw">if</span> (map.<span class="fn">containsKey</span>(complement)) {
+        <span class="cm">// found the pair — act on it</span>
+    }
+    map.<span class="fn">put</span>(nums[i], i); <span class="cm">// add current element after check to avoid self-pairing</span>
+}</pre>
+
+  <!-- ── COMPLEXITY ── -->
+  <h2>Complexity Summary</h2>
+  <table class="data-table">
+    <thead><tr><th>Approach</th><th>Time</th><th>Space</th><th>When to use</th></tr></thead>
+    <tbody>
+      <tr><td>Nested loop (brute force)</td><td><span class="badge b-red">O(n²)</span></td><td><span class="badge b-green">O(1)</span></td><td>Baseline only — never in production or interviews</td></tr>
+      <tr><td>Sort + two pointers</td><td><span class="badge b-yellow">O(n log n)</span></td><td><span class="badge b-green">O(1)</span></td><td>When space is constrained and order destruction is acceptable</td></tr>
+      <tr><td>HashMap / HashSet</td><td><span class="badge b-green">O(n)</span></td><td><span class="badge b-yellow">O(n)</span></td><td>Standard choice — optimal time, acceptable space trade-off</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider"/>
+
+  <!-- ── WHEN TO USE ── -->
+  <h2>When to Reach for Arrays &amp; Hashing</h2>
+  <p>Recognize these signals in a problem statement:</p>
+  <ul style="margin: 0 0 18px 24px; color: var(--ink-soft); font-weight:300; line-height:2;">
+    <li>Find a <strong>pair, triplet, or complement</strong> that satisfies a sum or condition</li>
+    <li>Detect or count <strong>duplicates</strong> in an array or string</li>
+    <li><strong>Group elements</strong> by a shared property (anagrams, same digit sum, etc.)</li>
+    <li>Check whether one array is a <strong>permutation or subset</strong> of another</li>
+    <li>Track the <strong>frequency</strong> of characters or numbers</li>
+  </ul>
+
+  <hr class="divider"/>
+
+  <!-- ── PRACTICE ── -->
+  <h2>Practice Ladder</h2>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Problem</th><th>Difficulty</th><th>Key Insight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Contains Duplicate (LC 217)</td><td><span class="badge b-green">Easy</span></td><td>HashSet membership check</td></tr>
+      <tr><td>2</td><td>Valid Anagram (LC 242)</td><td><span class="badge b-green">Easy</span></td><td>Frequency map comparison</td></tr>
+      <tr><td>3</td><td>Two Sum (LC 1)</td><td><span class="badge b-green">Easy</span></td><td>Complement map — covered above</td></tr>
+      <tr><td>4</td><td>Group Anagrams (LC 49)</td><td><span class="badge b-yellow">Medium</span></td><td>Sorted string as map key — covered above</td></tr>
+      <tr><td>5</td><td>Top K Frequent Elements (LC 347)</td><td><span class="badge b-yellow">Medium</span></td><td>Frequency map + bucket sort</td></tr>
+      <tr><td>6</td><td>Longest Consecutive Sequence (LC 128)</td><td><span class="badge b-yellow">Medium</span></td><td>HashSet to detect sequence starts</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Learning Path</div>
+    <p>LC 128 (Longest Consecutive Sequence) requires reasoning about which elements to iterate from, and why a HashSet lookup eliminates the need for sorting — making it a strong test of whether the pattern is truly internalized. Try solving it without hints before moving to Post #2.</p>
+  </div>
+
+  <hr class="divider"/>
+
+  <h3>Up Next — Post #2: Two Pointers</h3>
+  <p>Post #2 introduces the two-pointer technique — placing one pointer at each end of a sorted array (or one fast and one slow on the same pass) to find pairs or partition elements in O(n) without extra space. It builds directly on the array intuition developed here, and shows when the sort + pointer approach beats hashing.</p>
+
+  <p style="color:var(--ink-faint); font-size:13px; margin-top:44px; font-style:italic;">
+    Interview Prep Series · Post #1 of 20
+  </p>
+
+</div>
+</main>
+
+<footer class="post-footer">
+  <strong>Interview Prep Series</strong> — Arrays & Hashing · Two Pointers · Sliding Window · Prefix Sum · Binary Search · and 15 more.
+  <p class="next-label">Next: Two Pointers →</p>
+</footer>
+
+</body>
+</html>
