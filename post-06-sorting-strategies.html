@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sorting Strategies — Interview Prep Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:        #0a1220;
+      --ink-soft:   #1a2030;
+      --ink-faint:  #4a5a7a;
+      --paper:      #f4f7fd;
+      --paper-warm: #eef3fa;
+      --accent:     #2e5fa3;
+      --accent-alt: #1a3f7a;
+      --orange:     #b5460f;
+      --green:      #0e7c5b;
+      --highlight:  #7aa8e0;
+      --code-bg:    #08101e;
+      --code-fg:    #a8c4e8;
+      --border:     #b8c8e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 17px;
+      line-height: 1.8;
+    }
+
+    .hero {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 72px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 50% 110%, #2e5fa322, transparent);
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--highlight), var(--accent-alt));
+    }
+    .hero-eyebrow {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--highlight); margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: 'Lora', serif; font-size: clamp(2rem, 5.5vw, 3.4rem);
+      font-weight: 700; line-height: 1.15; max-width: 680px; margin: 0 auto 16px;
+    }
+    .hero-sub {
+      color: #4a6a9a; font-size: 15px; font-weight: 300;
+      max-width: 580px; margin: 0 auto 36px;
+    }
+    .hero-meta {
+      display: flex; justify-content: center; gap: 24px;
+      flex-wrap: wrap; font-size: 12px; color: #1a3050; letter-spacing: 0.04em;
+    }
+
+    .container { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+    .post-body { padding: 60px 24px 96px; }
+
+    h2 {
+      font-family: 'Lora', serif; font-size: 1.75rem; font-weight: 700;
+      color: var(--ink); margin: 52px 0 14px; line-height: 1.25;
+      padding-bottom: 10px; border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-family: 'Source Sans 3', sans-serif; font-size: 0.82rem;
+      font-weight: 600; color: var(--accent-alt); margin: 32px 0 8px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    p { margin-bottom: 16px; color: var(--ink-soft); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    .callout { border-left: 3px solid var(--accent); background: var(--paper-warm); padding: 16px 20px; margin: 24px 0; border-radius: 0 5px 5px 0; }
+    .callout-tip  { border-left-color: var(--green); }
+    .callout-note { border-left-color: var(--accent-alt); }
+    .callout-label { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+    .callout-tip  .callout-label { color: var(--green); }
+    .callout-note .callout-label { color: var(--accent-alt); }
+    .callout p { margin: 0; font-size: 15px; }
+
+    pre {
+      background: var(--code-bg); color: var(--code-fg);
+      font-family: 'JetBrains Mono', monospace; font-size: 13px;
+      line-height: 1.7; padding: 26px 28px; border-radius: 6px;
+      overflow-x: auto; margin: 20px 0 28px; position: relative;
+    }
+    pre .lang { position: absolute; top: 10px; right: 14px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #0a1830; }
+    .kw  { color: #7aa8e0; }
+    .fn  { color: #a8c8f0; }
+    .cm  { color: #6a8aaa; font-style: italic; }
+    .tp  { color: #a8c4e8; }
+    .num { color: #f0c878; }
+    .str { color: #90d890; }
+    code {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.83em;
+      background: var(--paper-warm); border: 1px solid var(--border);
+      padding: 2px 5px; border-radius: 3px; color: var(--orange);
+    }
+
+    .diagram-wrap {
+      margin: 32px 0; background: white; border: 1px solid var(--border);
+      border-radius: 8px; padding: 28px 16px 20px; text-align: center;
+      box-shadow: 0 1px 12px rgba(0,0,0,0.04);
+    }
+    .diagram-caption { font-size: 12.5px; color: var(--ink-faint); margin-top: 14px; font-style: italic; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .data-table th { background: var(--ink); color: var(--paper); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); font-weight: 300; }
+    .data-table tr:nth-child(even) td { background: var(--paper-warm); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+    .b-green  { background: #d4f0e4; color: #0a6e46; }
+    .b-yellow { background: #fdf0c8; color: #8a6000; }
+    .b-red    { background: #fde4e4; color: #a01010; }
+
+    ul.signal-list { margin: 0 0 18px 24px; color: var(--ink-soft); font-weight: 300; line-height: 2; }
+
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    .post-footer { background: var(--ink); color: #1a3050; text-align: center; padding: 44px 24px; font-size: 13px; }
+    .post-footer strong { color: #4a6a9a; }
+    .next-label { margin-top: 10px; color: var(--highlight); font-style: italic; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">Interview Prep Series · Post #6 of 20</div>
+  <h1>Sorting Strategies</h1>
+  <p class="hero-sub">Sorting is not just a prerequisite — it is the solution. Recognizing when a sort transforms an intractable problem into a trivial one is one of the highest-leverage skills in an interview.</p>
+  <div class="hero-meta">
+    <span>⏱ 5 min read</span>
+    <span>🗂 Fundamentals</span>
+    <span>🔑 Java 8</span>
+    <span>📈 Intermediate → Advanced</span>
+  </div>
+</header>
+
+<main class="post-body">
+<div class="container">
+
+  <p>Most sorting coverage in interview prep treats sorting as a preprocessing step — something you do before applying another technique. This post flips that perspective: <strong>sorting is often the technique itself</strong>. Understanding why, and recognizing the problems where it applies, is what separates engineers who reach for the right tool from those who over-engineer a solution.</p>
+
+  <!-- Core Idea -->
+  <h2>The Core Idea</h2>
+  <p>Sorting imposes <strong>order</strong> on a collection. Once elements are ordered, many problems become trivial: adjacency reveals duplicates, proximity reveals intervals to merge, and relative position enables two-pointer scans. The cost is always O(n log n) time and typically O(1) or O(n) space. The question to ask is: <strong>does imposing order make the problem structurally simpler?</strong> If yes, sort first.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 118" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .sm { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .sl { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .ss { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+      </defs>
+
+      <!-- Unsorted row -->
+      <text x="10" y="26" class="sl" fill="#4a5a7a" font-weight="600">Unsorted</text>
+      <!-- 8 cells x=100, w=64, gap=2 -->
+      <rect x="100" y="10" width="64" height="30" rx="3" fill="#fde4e4" stroke="#e0b0b0" stroke-width="1.2"/>
+      <rect x="166" y="10" width="64" height="30" rx="3" fill="#fde4e4" stroke="#e0b0b0" stroke-width="1.2"/>
+      <rect x="232" y="10" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="298" y="10" width="64" height="30" rx="3" fill="#fde4e4" stroke="#e0b0b0" stroke-width="1.2"/>
+      <rect x="364" y="10" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="430" y="10" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="496" y="10" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="562" y="10" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <text x="132" y="31" class="sm" fill="#c04040" text-anchor="middle">3</text>
+      <text x="198" y="31" class="sm" fill="#c04040" text-anchor="middle">1</text>
+      <text x="264" y="31" class="sm" fill="#4a5a7a" text-anchor="middle">4</text>
+      <text x="330" y="31" class="sm" fill="#c04040" text-anchor="middle">1</text>
+      <text x="396" y="31" class="sm" fill="#4a5a7a" text-anchor="middle">5</text>
+      <text x="462" y="31" class="sm" fill="#4a5a7a" text-anchor="middle">9</text>
+      <text x="528" y="31" class="sm" fill="#4a5a7a" text-anchor="middle">2</text>
+      <text x="594" y="31" class="sm" fill="#4a5a7a" text-anchor="middle">6</text>
+      <text x="400" y="52" class="ss" fill="#c04040">duplicates scattered — hard to find</text>
+
+      <!-- Arrow -->
+      <text x="330" y="70" class="sl" fill="#2e5fa3" text-anchor="middle" font-weight="600">↓  Arrays.sort()  O(n log n)  ↓</text>
+
+      <!-- Sorted row -->
+      <text x="10" y="96" class="sl" fill="#2e5fa3" font-weight="600">Sorted</text>
+      <rect x="100" y="80" width="64" height="30" rx="3" fill="#fde4e4" stroke="#c04040" stroke-width="1.8"/>
+      <rect x="166" y="80" width="64" height="30" rx="3" fill="#fde4e4" stroke="#c04040" stroke-width="1.8"/>
+      <rect x="232" y="80" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="298" y="80" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="364" y="80" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="430" y="80" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="496" y="80" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <rect x="562" y="80" width="64" height="30" rx="3" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <text x="132" y="101" class="sm" fill="#c04040" text-anchor="middle">1</text>
+      <text x="198" y="101" class="sm" fill="#c04040" text-anchor="middle">1</text>
+      <text x="264" y="101" class="sm" fill="#4a5a7a" text-anchor="middle">2</text>
+      <text x="330" y="101" class="sm" fill="#4a5a7a" text-anchor="middle">3</text>
+      <text x="396" y="101" class="sm" fill="#4a5a7a" text-anchor="middle">4</text>
+      <text x="462" y="101" class="sm" fill="#4a5a7a" text-anchor="middle">5</text>
+      <text x="528" y="101" class="sm" fill="#4a5a7a" text-anchor="middle">6</text>
+      <text x="594" y="101" class="sm" fill="#4a5a7a" text-anchor="middle">9</text>
+      <text x="148" y="118" class="ss" fill="#2e5fa3" text-anchor="middle">adjacent ✓</text>
+    </svg>
+    <p class="diagram-caption">Fig 1. One sort pass makes duplicates adjacent and intervals mergeable — unlocking O(n) solutions to problems that would otherwise require O(n²).</p>
+  </div>
+
+  <!-- Two Patterns -->
+  <h2>Two Sort-First Patterns</h2>
+
+  <h3>Pattern 1 — Sort Then Scan</h3>
+  <p>Sort the input, then solve in a single pass — whether that pass is a linear scan, a two-pointer sweep, a greedy selection, or a binary search. Adjacency after sorting is what makes all of these possible. The sort costs O(n log n); the subsequent pass is O(n), so the total is O(n log n). Examples: merging overlapping intervals, removing duplicates, finding pairs that satisfy a sum constraint.</p>
+
+  <h3>Pattern 2 — Custom Comparator</h3>
+  <p>The default lexicographic or numeric sort order is wrong for the problem. Define a custom comparator that encodes the problem's specific ordering rule. <strong>The comparator is the insight</strong> — once you define it correctly, sorting does all the work. Examples: arranging numbers to form the largest value, sorting tasks by a custom priority.</p>
+
+  <!-- Example 1 -->
+  <h2>Example 1 — Merge Intervals</h2>
+  <p><em>LeetCode #56 · Medium · Sort then scan</em></p>
+  <p>Given an array of intervals where <code>intervals[i] = [start, end]</code>, merge all overlapping intervals and return the result.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>[[1,3],[2,6],[8,10],[15,18]]</code> → <strong>[[1,6],[8,10],[15,18]]</strong><br>
+    <code>[1,3]</code> and <code>[2,6]</code> overlap (3 ≥ 2) so they merge to <code>[1,6]</code>.</p>
+  </div>
+
+  <p>Without sorting, detecting which intervals overlap requires O(n²) comparisons. After sorting by start time, overlapping intervals are guaranteed to be adjacent — a single linear scan suffices. Two intervals overlap when <code>curr.start &lt;= prev.end</code>; merge by extending <code>prev.end = max(prev.end, curr.end)</code>.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 166" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .im { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .il { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .is { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+      </defs>
+
+      <!-- timeline axis: x=40..620, representing values 0..20, scale=29px per unit -->
+      <!-- 1=69, 2=98, 3=127, 6=214, 8=272, 10=330, 15=475, 18=562 -->
+
+      <!-- sorted label -->
+      <text x="10" y="18" class="is" fill="#4a5a7a" font-weight="600">Sorted by start →</text>
+
+      <!-- interval bars -->
+      <!-- [1,3] -->
+      <rect x="69" y="24" width="58" height="20" rx="3" fill="#2e5fa3" opacity="0.7"/>
+      <text x="98" y="38" class="is" fill="white" text-anchor="middle">[1,3]</text>
+      <!-- [2,6] -->
+      <rect x="98" y="48" width="116" height="20" rx="3" fill="#2e5fa3" opacity="0.4"/>
+      <text x="156" y="62" class="is" fill="#1a3f7a" text-anchor="middle">[2,6] overlaps</text>
+      <!-- merge result -->
+      <rect x="69" y="72" width="145" height="20" rx="3" fill="#0e7c5b" opacity="0.7"/>
+      <text x="141" y="86" class="is" fill="white" text-anchor="middle">merged → [1,6]</text>
+
+      <!-- [8,10] -->
+      <rect x="272" y="72" width="58" height="20" rx="3" fill="#2e5fa3" opacity="0.7"/>
+      <text x="301" y="86" class="is" fill="white" text-anchor="middle">[8,10]</text>
+
+      <!-- [15,18] -->
+      <rect x="475" y="72" width="87" height="20" rx="3" fill="#2e5fa3" opacity="0.7"/>
+      <text x="518" y="86" class="is" fill="white" text-anchor="middle">[15,18]</text>
+
+      <!-- axis -->
+      <line x1="40" y1="104" x2="630" y2="104" stroke="#b8c8e0" stroke-width="1"/>
+      <text x="69"  y="116" class="is" fill="#8a9aba" text-anchor="middle">1</text>
+      <text x="98"  y="116" class="is" fill="#8a9aba" text-anchor="middle">2</text>
+      <text x="127" y="116" class="is" fill="#8a9aba" text-anchor="middle">3</text>
+      <text x="214" y="116" class="is" fill="#8a9aba" text-anchor="middle">6</text>
+      <text x="272" y="116" class="is" fill="#8a9aba" text-anchor="middle">8</text>
+      <text x="330" y="116" class="is" fill="#8a9aba" text-anchor="middle">10</text>
+      <text x="475" y="116" class="is" fill="#8a9aba" text-anchor="middle">15</text>
+      <text x="562" y="116" class="is" fill="#8a9aba" text-anchor="middle">18</text>
+
+      <!-- trace -->
+      <text x="20" y="136" class="is" fill="#4a5a7a" font-weight="600">curr=[2,6]:  </text>
+      <text x="90" y="136" class="is" fill="#2e5fa3">2 ≤ 3  overlap → extend end to 6 → result=[[1,6]]</text>
+      <text x="20" y="152" class="is" fill="#4a5a7a" font-weight="600">curr=[8,10]: </text>
+      <text x="90" y="152" class="is" fill="#4a5a7a">8 &gt; 6  no overlap → append   → result=[[1,6],[8,10]]</text>
+      <text x="20" y="166" class="is" fill="#4a5a7a" font-weight="600">curr=[15,18]:</text>
+      <text x="90" y="166" class="is" fill="#4a5a7a">15 &gt; 10 no overlap → append   → result=[[1,6],[8,10],[15,18]] ✓</text>
+    </svg>
+    <p class="diagram-caption">Fig 2. After sorting by start time, overlapping intervals are always adjacent. A single left-to-right scan merges them in O(n).</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span>[][] <span class="fn">merge</span>(<span class="kw">int</span>[][] intervals) {
+    Arrays.<span class="fn">sort</span>(intervals, (a, b) -> a[<span class="num">0</span>] - b[<span class="num">0</span>]);  <span class="cm">// sort by start time</span>
+
+    List&lt;<span class="kw">int</span>[]&gt; result = <span class="kw">new</span> ArrayList&lt;&gt;();
+    result.<span class="fn">add</span>(intervals[<span class="num">0</span>]);
+
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; intervals.length; i++) {
+        <span class="kw">int</span>[] curr = intervals[i];
+        <span class="kw">int</span>[] last = result.<span class="fn">get</span>(result.<span class="fn">size</span>() - <span class="num">1</span>);
+
+        <span class="kw">if</span> (curr[<span class="num">0</span>] &lt;= last[<span class="num">1</span>]) {
+            last[<span class="num">1</span>] = Math.<span class="fn">max</span>(last[<span class="num">1</span>], curr[<span class="num">1</span>]);  <span class="cm">// merge: extend end</span>
+        } <span class="kw">else</span> {
+            result.<span class="fn">add</span>(curr);                       <span class="cm">// no overlap: append</span>
+        }
+    }
+
+    <span class="kw">return</span> result.<span class="fn">toArray</span>(<span class="kw">new int</span>[<span class="num">0</span>][]);
+}
+<span class="cm">// Time: O(n log n)  |  Space: O(n)</span></pre>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Key Insight</div>
+    <p>The comparator <code>(a, b) -&gt; a[0] - b[0]</code> sorts by start time. After this sort, any two intervals that overlap must be adjacent in the array. A single pass then merges them greedily left to right.</p>
+  </div>
+
+  <!-- Example 2 -->
+  <h2>Example 2 — Largest Number</h2>
+  <p><em>LeetCode #179 · Medium · Custom comparator</em></p>
+  <p>Given a list of non-negative integers, arrange them so that they form the largest number and return it as a string.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>nums = [3, 30, 34, 5, 9]</code> → <strong>"9534330"</strong><br>
+    <code>nums = [10, 2]</code> → <strong>"210"</strong></p>
+  </div>
+
+  <p>The trick: numeric or lexicographic sort order is wrong here. The correct ordering asks: given two numbers A and B, does <code>AB</code> (A concatenated with B) form a larger number than <code>BA</code>? Define the comparator to answer exactly this question, and Java's sort does the rest.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 148" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .lm { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .ll { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .ls { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+      </defs>
+
+      <!-- Input -->
+      <text x="10" y="18" class="ls" fill="#4a5a7a" font-weight="600">Input: [3, 30, 34, 5, 9]</text>
+
+      <!-- Comparisons table -->
+      <text x="10" y="42" class="ls" fill="#4a5a7a" font-weight="600">Pairwise comparisons (a + b)  vs  (b + a):</text>
+
+      <!-- rows -->
+      <text x="20"  y="60" class="lm" fill="#4a5a7a">3  vs 30:</text>
+      <text x="120" y="60" class="lm" fill="#2e5fa3">"330"</text>
+      <text x="168" y="60" class="ls" fill="#4a5a7a">vs</text>
+      <text x="186" y="60" class="lm" fill="#b5460f">"303"</text>
+      <text x="240" y="60" class="ls" fill="#0e7c5b">→  330 &gt; 303  →  3 before 30  ✓</text>
+
+      <text x="20"  y="80" class="lm" fill="#4a5a7a">34 vs 3: </text>
+      <text x="120" y="80" class="lm" fill="#2e5fa3">"343"</text>
+      <text x="168" y="80" class="ls" fill="#4a5a7a">vs</text>
+      <text x="186" y="80" class="lm" fill="#b5460f">"334"</text>
+      <text x="240" y="80" class="ls" fill="#0e7c5b">→  343 &gt; 334  →  34 before 3  ✓</text>
+
+      <text x="20"  y="100" class="lm" fill="#4a5a7a">9  vs 5: </text>
+      <text x="120" y="100" class="lm" fill="#2e5fa3">"95" </text>
+      <text x="168" y="100" class="ls" fill="#4a5a7a">vs</text>
+      <text x="186" y="100" class="lm" fill="#b5460f">"59" </text>
+      <text x="240" y="100" class="ls" fill="#0e7c5b">→   95 &gt; 59   →  9 before 5  ✓</text>
+
+      <!-- Sorted + result -->
+      <rect x="10" y="114" width="638" height="28" rx="4" fill="#eef3fa" stroke="#b8c8e0" stroke-width="1"/>
+      <text x="20"  y="132" class="ls" fill="#4a5a7a" font-weight="600">Sorted order:</text>
+      <text x="115" y="132" class="lm" fill="#2e5fa3">[ 9,  5,  34,  3,  30 ]</text>
+      <text x="340" y="132" class="ls" fill="#4a5a7a">→  concatenate  →</text>
+      <text x="460" y="132" class="lm" fill="#0e7c5b">"9534330"  ✓</text>
+    </svg>
+    <p class="diagram-caption">Fig 3. The comparator (b + a).compareTo(a + b) encodes the problem's ordering rule. Once defined, sorting handles the rest in O(n log n).</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public</span> String <span class="fn">largestNumber</span>(<span class="kw">int</span>[] nums) {
+    String[] strs = <span class="kw">new</span> String[nums.length];
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {
+        strs[i] = String.<span class="fn">valueOf</span>(nums[i]);
+    }
+
+    <span class="cm">// comparator: prefer the order that forms the larger concatenation</span>
+    Arrays.<span class="fn">sort</span>(strs, (a, b) -> (b + a).<span class="fn">compareTo</span>(a + b));
+
+    <span class="kw">if</span> (strs[<span class="num">0</span>].<span class="fn">equals</span>(<span class="str">"0"</span>)) <span class="kw">return</span> <span class="str">"0"</span>;  <span class="cm">// edge case: all zeros</span>
+
+    StringBuilder sb = <span class="kw">new</span> StringBuilder();
+    <span class="kw">for</span> (String s : strs) sb.<span class="fn">append</span>(s);
+    <span class="kw">return</span> sb.<span class="fn">toString</span>();
+}
+<span class="cm">// Time: O(n log n · k)  k = avg digit length  |  Space: O(n)</span></pre>
+
+  <div class="callout callout-note">
+    <div class="callout-label">Why this comparator works</div>
+    <p>If <code>(b + a) &gt; (a + b)</code> as strings, b should come before a. Java's <code>compareTo</code> on strings compares lexicographically, which works correctly here because both concatenations always have the same total number of digits and thus the same length.</p>
+  </div>
+
+  <!-- Template -->
+  <h2>Universal Template</h2>
+  <p>The two sort-first skeletons that cover the majority of interview problems:</p>
+
+<pre><span class="lang">Java 8 — Pattern 1: Sort Then Scan</span>Arrays.<span class="fn">sort</span>(arr);  <span class="cm">// or Arrays.sort(arr, comparator)</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; arr.length; i++) {
+    <span class="cm">// adjacent elements are now structurally related</span>
+    <span class="cm">// compare arr[i] with arr[i-1] or with a running state</span>
+}</pre>
+
+<pre><span class="lang">Java 8 — Pattern 2: Custom Comparator</span>Arrays.<span class="fn">sort</span>(arr, (a, b) -> {
+    <span class="cm">// return negative if a should come before b</span>
+    <span class="cm">// return positive if b should come before a</span>
+    <span class="cm">// return 0 if order doesn't matter</span>
+});
+
+<span class="cm">// Common patterns:</span>
+<span class="cm">// Sort by first element:        (a, b) -> a[0] - b[0]</span>
+<span class="cm">// Sort by second element desc:  (a, b) -> b[1] - a[1]</span>
+<span class="cm">// Sort by string concatenation: (a, b) -> (b + a).compareTo(a + b)</span></pre>
+
+  <!-- Complexity -->
+  <h2>Complexity Summary</h2>
+  <table class="data-table">
+    <thead><tr><th>Approach</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Brute force (nested loop)</td><td><span class="badge b-red">O(n²)</span></td><td><span class="badge b-green">O(1)</span></td><td>Compare every pair</td></tr>
+      <tr><td>Sort + linear scan</td><td><span class="badge b-yellow">O(n log n)</span></td><td><span class="badge b-green">O(1)</span></td><td>Dominant cost is the sort</td></tr>
+      <tr><td>Sort + two pointers</td><td><span class="badge b-yellow">O(n log n)</span></td><td><span class="badge b-green">O(1)</span></td><td>Sort enables the monotonic property</td></tr>
+      <tr><td>Custom comparator sort</td><td><span class="badge b-yellow">O(n log n · k)</span></td><td><span class="badge b-yellow">O(n)</span></td><td>k = cost of one comparison</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  <h2>When to Reach for Sort First</h2>
+  <ul class="signal-list">
+    <li>The input is unsorted and you find yourself needing to compare every pair — sorting eliminates the need</li>
+    <li><strong>"Merge overlapping intervals"</strong> or any problem where adjacency after sorting reveals relationships</li>
+    <li><strong>"Arrange numbers to form the largest/smallest value"</strong> — almost always a custom comparator</li>
+    <li>A greedy strategy exists but only works on ordered input</li>
+    <li>You want to use two pointers or binary search but the array is not sorted</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Practice Ladder</h2>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Problem</th><th>Difficulty</th><th>Key Insight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Sort Colors (LC 75)</td><td><span class="badge b-yellow">Medium</span></td><td>Three-way partition sort (Dutch National Flag)</td></tr>
+      <tr><td>2</td><td>Merge Intervals (LC 56)</td><td><span class="badge b-yellow">Medium</span></td><td>Sort by start, scan and merge — covered above</td></tr>
+      <tr><td>3</td><td>Meeting Rooms (LC 252)</td><td><span class="badge b-green">Easy</span></td><td>Sort by start, check adjacent overlap</td></tr>
+      <tr><td>4</td><td>Largest Number (LC 179)</td><td><span class="badge b-yellow">Medium</span></td><td>Custom concatenation comparator — covered above</td></tr>
+      <tr><td>5</td><td>Meeting Rooms II (LC 253)</td><td><span class="badge b-yellow">Medium</span></td><td>Sort + min-heap to track concurrent meetings</td></tr>
+      <tr><td>6</td><td>Non-overlapping Intervals (LC 435)</td><td><span class="badge b-yellow">Medium</span></td><td>Sort by end, greedy removal — requires careful reasoning</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Learning Path</div>
+    <p>LC 435 (Non-overlapping Intervals) requires sorting by <em>end</em> time (not start) and greedily keeping intervals with the earliest end. The non-obvious sort order is what makes it a strong test of whether the sort-first pattern is truly internalized. Try deriving it without hints before moving to Post #7.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <h3>Up Next — Post #7: Linked Lists</h3>
+  <p>Post #7 covers linked list patterns — dummy nodes, in-place reversal, and the fast/slow pointer technique applied to cycle detection and finding the middle node. The building block for several harder problems in trees and graphs.</p>
+
+  <p style="color:var(--ink-faint); font-size:13px; margin-top:44px; font-style:italic;">
+    Interview Prep Series · Post #6 of 20
+  </p>
+
+</div>
+</main>
+
+<footer class="post-footer">
+  <strong>Interview Prep Series</strong> — Arrays & Hashing · Two Pointers · Sliding Window · Prefix Sum · Binary Search · Sorting Strategies · and 14 more.
+  <p class="next-label">Next: Linked Lists →</p>
+</footer>
+
+</body>
+</html>
