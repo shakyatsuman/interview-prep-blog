@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intervals — Interview Prep Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:        #0a1a06;
+      --ink-soft:   #1a2a10;
+      --ink-faint:  #4a6a2a;
+      --paper:      #f6faf0;
+      --paper-warm: #f0f5e8;
+      --accent:     #5a7a2e;
+      --accent-alt: #1a3f7a;
+      --orange:     #b5460f;
+      --green:      #0e7c5b;
+      --highlight:  #8aaa4a;
+      --code-bg:    #0a1400;
+      --code-fg:    #b8d890;
+      --border:     #c0d0a0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--paper); color: var(--ink); font-family: 'Source Sans 3', sans-serif; font-size: 17px; line-height: 1.8; }
+
+    .hero { background: var(--ink); color: var(--paper); padding: 72px 24px 56px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 110%, #5a7a2e22, transparent); }
+    .hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--highlight), #aad060); }
+    .hero-eyebrow { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--highlight); margin-bottom: 24px; }
+    .hero h1 { font-family: 'Lora', serif; font-size: clamp(2rem, 5.5vw, 3.4rem); font-weight: 700; line-height: 1.15; max-width: 680px; margin: 0 auto 16px; }
+    .hero-sub { color: #6a9a3a; font-size: 15px; font-weight: 300; max-width: 580px; margin: 0 auto 36px; }
+    .hero-meta { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; font-size: 12px; color: #1a3a0a; letter-spacing: 0.04em; }
+
+    .container { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+    .post-body { padding: 60px 24px 96px; }
+
+    h2 { font-family: 'Lora', serif; font-size: 1.75rem; font-weight: 700; color: var(--ink); margin: 52px 0 14px; line-height: 1.25; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+    h3 { font-family: 'Source Sans 3', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--accent-alt); margin: 32px 0 8px; letter-spacing: 0.06em; text-transform: uppercase; }
+    p { margin-bottom: 16px; color: var(--ink-soft); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    .callout { border-left: 3px solid var(--accent); background: var(--paper-warm); padding: 16px 20px; margin: 24px 0; border-radius: 0 5px 5px 0; }
+    .callout-tip  { border-left-color: var(--green); }
+    .callout-note { border-left-color: var(--accent-alt); }
+    .callout-label { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+    .callout-tip  .callout-label { color: var(--green); }
+    .callout-note .callout-label { color: var(--accent-alt); }
+    .callout p { margin: 0; font-size: 15px; }
+
+    pre { background: var(--code-bg); color: var(--code-fg); font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; padding: 26px 28px; border-radius: 6px; overflow-x: auto; margin: 20px 0 28px; position: relative; }
+    pre .lang { position: absolute; top: 10px; right: 14px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #1a3000; }
+    .kw  { color: #8aaa4a; }
+    .fn  { color: #aac860; }
+    .cm  { color: #4a6820; font-style: italic; }
+    .tp  { color: #b8d890; }
+    .num { color: #f0c878; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.83em; background: var(--paper-warm); border: 1px solid var(--border); padding: 2px 5px; border-radius: 3px; color: var(--orange); }
+
+    .diagram-wrap { margin: 32px 0; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 28px 16px 20px; text-align: center; box-shadow: 0 1px 12px rgba(0,0,0,0.04); }
+    .diagram-caption { font-size: 12.5px; color: var(--ink-faint); margin-top: 14px; font-style: italic; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .data-table th { background: var(--ink); color: var(--paper); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); font-weight: 300; }
+    .data-table tr:nth-child(even) td { background: var(--paper-warm); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+    .b-green  { background: #d4f0e4; color: #0a6e46; }
+    .b-yellow { background: #fdf0c8; color: #8a6000; }
+    .b-red    { background: #fde4e4; color: #a01010; }
+
+    ul.signal-list { margin: 0 0 18px 24px; color: var(--ink-soft); font-weight: 300; line-height: 2; }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    .post-footer { background: var(--ink); color: #1a3a0a; text-align: center; padding: 44px 24px; font-size: 13px; }
+    .post-footer strong { color: #6a9a3a; }
+    .next-label { margin-top: 10px; color: var(--highlight); font-style: italic; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">Interview Prep Series · Post #7 of 20</div>
+  <h1>Intervals</h1>
+  <p class="hero-sub">Sort first, then scan. Interval problems reduce to one of three operations: merge overlapping ranges, insert a new range into a sorted list, or count how many ranges overlap at a point.</p>
+  <div class="hero-meta">
+    <span>⏱ 5 min read</span>
+    <span>📏 Arrays</span>
+    <span>🔑 Java 8</span>
+    <span>📈 Intermediate → Advanced</span>
+  </div>
+</header>
+
+<main class="post-body">
+<div class="container">
+
+  <p>Post #6 established the sort-first pattern. Interval problems are where that pattern pays off most directly. Every interval is a pair <code>[start, end]</code>. Sorting by start time makes a fundamental property emerge: <strong>any two intervals that overlap must be adjacent in the sorted list</strong>. A single linear scan then handles merging, gap detection, or scheduling — all in O(n) after the O(n log n) sort.</p>
+
+  <div class="callout callout-note">
+    <div class="callout-label">Prerequisites</div>
+    <p>Post #6 (Sorting Strategies) — sort-first pattern and custom comparators. Merge Intervals was introduced there; this post covers it again briefly and then goes deeper.</p>
+  </div>
+
+  <!-- Core Idea -->
+  <h2>The Core Idea</h2>
+  <p>Two intervals <code>[a, b]</code> and <code>[c, d]</code> overlap if and only if <code>a &lt;= d</code> and <code>c &lt;= b</code>. Equivalently, <strong>they do not overlap only when one ends before the other begins</strong>: <code>b &lt; c</code> or <code>d &lt; a</code>. Sorting by start time eliminates the second case — after sorting, <code>a &lt;= c</code> is always guaranteed. The only remaining overlap check is <code>c &lt;= b</code>.</p>
+
+  <div class="diagram-wrap">
+    <svg     <svg viewBox="0 0 660 160" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .im { font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:600; }
+          .il { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .is { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+      </defs>
+
+      <!-- Scale: x = 30 + val*28. 1=58,2=86,3=114,4=142,6=198,8=254,9=282,10=310,12=366 -->
+
+      <text x="10" y="14" class="is" fill="#4a6a2a" font-weight="600">Input (unsorted)</text>
+
+      <!-- [1,4]: x=58 w=84   [2,6]: x=86 w=112   [8,10]: x=254 w=56   [9,12]: x=282 w=84 -->
+      <rect x="58"  y="20" width="84"  height="18" rx="3" fill="#5a7a2e" opacity="0.25" stroke="#5a7a2e" stroke-width="1.2"/>
+      <rect x="86"  y="42" width="112" height="18" rx="3" fill="#5a7a2e" opacity="0.25" stroke="#5a7a2e" stroke-width="1.2"/>
+      <rect x="254" y="64" width="56"  height="18" rx="3" fill="#c0d0a0" stroke="#a0b080" stroke-width="1"/>
+      <rect x="282" y="64" width="84"  height="18" rx="3" fill="#c0d0a0" stroke="#a0b080" stroke-width="1"/>
+
+      <text x="100" y="33" class="im" fill="#5a7a2e" text-anchor="middle">[1, 4]</text>
+      <text x="142" y="55" class="im" fill="#5a7a2e" text-anchor="middle">[2, 6]</text>
+      <text x="282" y="77" class="im" fill="#6a8a4a" text-anchor="middle">[8,10]</text>
+      <text x="324" y="77" class="im" fill="#6a8a4a" text-anchor="middle">[9,12]</text>
+
+      <!-- Arrow -->
+      <text x="330" y="102" class="il" fill="#5a7a2e" text-anchor="middle" font-weight="600">↓  sort by start, scan and merge</text>
+
+      <!-- Result: [1,6]: x=58 w=140   [8,12]: x=254 w=112 -->
+      <text x="10" y="120" class="is" fill="#0e7c5b" font-weight="600">Result (merged)</text>
+      <rect x="58"  y="124" width="140" height="18" rx="3" fill="#0e7c5b" opacity="0.22" stroke="#0e7c5b" stroke-width="1.5"/>
+      <rect x="254" y="124" width="112" height="18" rx="3" fill="#0e7c5b" opacity="0.22" stroke="#0e7c5b" stroke-width="1.5"/>
+      <text x="128" y="137" class="im" fill="#0e7c5b" text-anchor="middle">[1, 6]</text>
+      <text x="310" y="137" class="im" fill="#0e7c5b" text-anchor="middle">[8, 12]</text>
+
+      <!-- Axis -->
+      <line x1="40" y1="150" x2="500" y2="150" stroke="#c0d0a0" stroke-width="1"/>
+      <text x="58"  y="159" class="is" fill="#8aaa6a" text-anchor="middle">1</text>
+      <text x="86"  y="159" class="is" fill="#8aaa6a" text-anchor="middle">2</text>
+      <text x="198" y="159" class="is" fill="#8aaa6a" text-anchor="middle">6</text>
+      <text x="254" y="159" class="is" fill="#8aaa6a" text-anchor="middle">8</text>
+      <text x="282" y="159" class="is" fill="#8aaa6a" text-anchor="middle">9</text>
+      <text x="366" y="159" class="is" fill="#8aaa6a" text-anchor="middle">12</text>
+    </svg>
+    <p class="diagram-caption">Fig 1. After sorting by start, overlapping intervals are adjacent. [1,4] and [2,6] merge to [1,6]; [8,10] and [9,12] merge to [8,12].</p>
+  </div>
+
+  <!-- Example 1 -->
+  <h2>Example 1 — Merge Intervals</h2>
+  <p><em>LeetCode #56 · Medium · Sort then scan</em></p>
+  <p>Given an array of intervals, merge all overlapping intervals and return the result. This is the canonical interval problem — introduced in Post #6 and revisited here as the foundation for everything that follows.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>[[1,3],[2,6],[8,10],[15,18]]</code> → <strong>[[1,6],[8,10],[15,18]]</strong></p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span>[][] <span class="fn">merge</span>(<span class="kw">int</span>[][] intervals) {
+    Arrays.<span class="fn">sort</span>(intervals, (a, b) -> a[<span class="num">0</span>] - b[<span class="num">0</span>]);
+
+    List&lt;<span class="kw">int</span>[]&gt; result = <span class="kw">new</span> ArrayList&lt;&gt;();
+    result.<span class="fn">add</span>(intervals[<span class="num">0</span>]);
+
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; intervals.length; i++) {
+        <span class="kw">int</span>[] curr = intervals[i];
+        <span class="kw">int</span>[] last = result.<span class="fn">get</span>(result.<span class="fn">size</span>() - <span class="num">1</span>);
+
+        <span class="kw">if</span> (curr[<span class="num">0</span>] &lt;= last[<span class="num">1</span>]) {
+            last[<span class="num">1</span>] = Math.<span class="fn">max</span>(last[<span class="num">1</span>], curr[<span class="num">1</span>]);  <span class="cm">// overlap: extend end</span>
+        } <span class="kw">else</span> {
+            result.<span class="fn">add</span>(curr);                       <span class="cm">// no overlap: new group</span>
+        }
+    }
+    <span class="kw">return</span> result.<span class="fn">toArray</span>(<span class="kw">new int</span>[<span class="num">0</span>][]);
+}
+<span class="cm">// Time: O(n log n)  |  Space: O(n)</span></pre>
+
+  <!-- Example 2 -->
+  <h2>Example 2 — Insert Interval</h2>
+  <p><em>LeetCode #57 · Medium · Sorted input, no sort needed</em></p>
+  <p>Given a list of non-overlapping intervals already sorted by start time, and a new interval, insert the new interval and merge if necessary. Return the resulting list.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>intervals = [[1,2],[3,5],[6,7],[8,10],[12,16]], newInterval = [4,8]</code><br>
+    → <strong>[[1,2],[3,10],[12,16]]</strong></p>
+  </div>
+
+  <p>Because the input is already sorted, no sort step is needed. Process in one pass using three phases. First, <strong>add all intervals that end before the new one starts</strong>. Second, <strong>merge all intervals that overlap the new one</strong> by expanding its boundaries. Finally, <strong>add all remaining intervals</strong>.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 148" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .p2m { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; }
+          .p2l { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .p2s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+      </defs>
+
+      <!-- intervals: [1,2],[3,5],[6,7],[8,10],[12,16]  newInterval=[4,8] -->
+      <!-- scale: x=30 + val*28.  1→58, 2→86, 3→114, 4→142, 5→170, 6→198,
+                                   7→226, 8→254, 10→310, 12→366, 16→478 -->
+
+      <!-- Phase labels -->
+      <text x="72"  y="12" class="p2s" fill="#6a8a4a" text-anchor="middle">Phase 1</text>
+      <text x="210" y="12" class="p2s" fill="#0e7c5b" text-anchor="middle">Phase 2 (merge)</text>
+      <text x="422" y="12" class="p2s" fill="#6a8a4a" text-anchor="middle">Phase 3</text>
+
+      <!-- Existing intervals row -->
+      <rect x="58"  y="18" width="28"  height="20" rx="3" fill="#c0d0a0" stroke="#a0b080" stroke-width="1"/>  <!-- [1,2] -->
+      <rect x="114" y="18" width="56"  height="20" rx="3" fill="#5a7a2e" opacity="0.3" stroke="#5a7a2e" stroke-width="1.3"/>  <!-- [3,5] -->
+      <rect x="198" y="18" width="28"  height="20" rx="3" fill="#5a7a2e" opacity="0.3" stroke="#5a7a2e" stroke-width="1.3"/>  <!-- [6,7] -->
+      <rect x="254" y="18" width="56"  height="20" rx="3" fill="#5a7a2e" opacity="0.3" stroke="#5a7a2e" stroke-width="1.3"/>  <!-- [8,10] -->
+      <rect x="366" y="18" width="112" height="20" rx="3" fill="#c0d0a0" stroke="#a0b080" stroke-width="1"/>  <!-- [12,16] -->
+
+      <text x="72"  y="32" class="p2m" fill="#6a8a4a" text-anchor="middle">[1,2]</text>
+      <text x="142" y="32" class="p2m" fill="#5a7a2e" text-anchor="middle">[3,5]</text>
+      <text x="212" y="32" class="p2m" fill="#5a7a2e" text-anchor="middle">[6,7]</text>
+      <text x="282" y="32" class="p2m" fill="#5a7a2e" text-anchor="middle">[8,10]</text>
+      <text x="422" y="32" class="p2m" fill="#6a8a4a" text-anchor="middle">[12,16]</text>
+
+      <!-- New interval [4,8] -->
+      <rect x="142" y="46" width="112" height="20" rx="3" fill="#0e7c5b" opacity="0.2" stroke="#0e7c5b" stroke-width="1.5" stroke-dasharray="4"/>
+      <text x="198" y="60" class="p2m" fill="#0e7c5b" text-anchor="middle">new: [4,8]</text>
+
+      <!-- Merge result -->
+      <text x="330" y="82" class="p2l" fill="#0e7c5b" text-anchor="middle" font-weight="600">↓  merge: min(3,4)=3, max(10,8)=10 → [3,10]</text>
+
+      <!-- Result row -->
+      <rect x="58"  y="96" width="28"  height="20" rx="3" fill="#c0d0a0" stroke="#a0b080" stroke-width="1"/>
+      <rect x="114" y="96" width="196" height="20" rx="3" fill="#0e7c5b" opacity="0.22" stroke="#0e7c5b" stroke-width="1.5"/>
+      <rect x="366" y="96" width="112" height="20" rx="3" fill="#c0d0a0" stroke="#a0b080" stroke-width="1"/>
+
+      <text x="72"  y="110" class="p2m" fill="#6a8a4a" text-anchor="middle">[1,2]</text>
+      <text x="212" y="110" class="p2m" fill="#0e7c5b" text-anchor="middle">[3,10]</text>
+      <text x="422" y="110" class="p2m" fill="#6a8a4a" text-anchor="middle">[12,16]</text>
+
+      <!-- Axis -->
+      <line x1="40" y1="128" x2="620" y2="128" stroke="#c0d0a0" stroke-width="1"/>
+      <text x="58"  y="138" class="p2s" fill="#8aaa6a" text-anchor="middle">1</text>
+      <text x="86"  y="138" class="p2s" fill="#8aaa6a" text-anchor="middle">2</text>
+      <text x="114" y="138" class="p2s" fill="#8aaa6a" text-anchor="middle">3</text>
+      <text x="142" y="138" class="p2s" fill="#0e7c5b" text-anchor="middle">4</text>
+      <text x="254" y="138" class="p2s" fill="#0e7c5b" text-anchor="middle">8</text>
+      <text x="310" y="138" class="p2s" fill="#8aaa6a" text-anchor="middle">10</text>
+      <text x="366" y="138" class="p2s" fill="#8aaa6a" text-anchor="middle">12</text>
+      <text x="478" y="138" class="p2s" fill="#8aaa6a" text-anchor="middle">16</text>
+      <line x1="142" y1="124" x2="142" y2="132" stroke="#0e7c5b" stroke-width="1"/>
+      <line x1="254" y1="124" x2="254" y2="132" stroke="#0e7c5b" stroke-width="1"/>
+    </svg>
+    <p class="diagram-caption">Fig 2. Three-phase insert. Phase 1: [1,2] ends before 4 — add as-is. Phase 2: [3,5],[6,7],[8,10] all overlap [4,8] — merge to [3,10]. Phase 3: [12,16] starts after 8 — add as-is.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span>[][] <span class="fn">insert</span>(<span class="kw">int</span>[][] intervals, <span class="kw">int</span>[] newInterval) {
+    List&lt;<span class="kw">int</span>[]&gt; result = <span class="kw">new</span> ArrayList&lt;&gt;();
+    <span class="kw">int</span> i = <span class="num">0</span>, n = intervals.length;
+
+    <span class="cm">// Phase 1: add all intervals ending before newInterval starts</span>
+    <span class="kw">while</span> (i &lt; n && intervals[i][<span class="num">1</span>] &lt; newInterval[<span class="num">0</span>]) {
+        result.<span class="fn">add</span>(intervals[i++]);
+    }
+
+    <span class="cm">// Phase 2: merge all overlapping intervals into newInterval</span>
+    <span class="kw">while</span> (i &lt; n && intervals[i][<span class="num">0</span>] &lt;= newInterval[<span class="num">1</span>]) {
+        newInterval[<span class="num">0</span>] = Math.<span class="fn">min</span>(newInterval[<span class="num">0</span>], intervals[i][<span class="num">0</span>]);
+        newInterval[<span class="num">1</span>] = Math.<span class="fn">max</span>(newInterval[<span class="num">1</span>], intervals[i][<span class="num">1</span>]);
+        i++;
+    }
+    result.<span class="fn">add</span>(newInterval);
+
+    <span class="cm">// Phase 3: add remaining intervals</span>
+    <span class="kw">while</span> (i &lt; n) result.<span class="fn">add</span>(intervals[i++]);
+
+    <span class="kw">return</span> result.<span class="fn">toArray</span>(<span class="kw">new int</span>[<span class="num">0</span>][]);
+}
+<span class="cm">// Time: O(n)  |  Space: O(n)  (input already sorted — no sort step needed)</span></pre>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Key Insight</div>
+    <p>Because the input is already sorted, this is O(n) — not O(n log n). The three-phase structure directly mirrors the three possible relationships between each existing interval and the new one: entirely before, overlapping, or entirely after.</p>
+  </div>
+
+  <!-- Template -->
+  <h2>Universal Template</h2>
+  <p>The two canonical interval skeletons:</p>
+
+<pre><span class="lang">Java 8 — Pattern 1: Merge (unsorted input)</span>Arrays.<span class="fn">sort</span>(intervals, (a, b) -> a[<span class="num">0</span>] - b[<span class="num">0</span>]);
+List&lt;<span class="kw">int</span>[]&gt; result = <span class="kw">new</span> ArrayList&lt;&gt;();
+result.<span class="fn">add</span>(intervals[<span class="num">0</span>]);
+<span class="kw">for</span> (<span class="kw">int</span>[] curr : intervals) {
+    <span class="kw">int</span>[] last = result.<span class="fn">get</span>(result.<span class="fn">size</span>() - <span class="num">1</span>);
+    <span class="kw">if</span> (curr[<span class="num">0</span>] &lt;= last[<span class="num">1</span>]) {
+        last[<span class="num">1</span>] = Math.<span class="fn">max</span>(last[<span class="num">1</span>], curr[<span class="num">1</span>]);  <span class="cm">// extend</span>
+    } <span class="kw">else</span> {
+        result.<span class="fn">add</span>(curr);                       <span class="cm">// new group</span>
+    }
+}</pre>
+
+<pre><span class="lang">Java 8 — Pattern 2: Insert (sorted input, three-phase)</span><span class="cm">// Phase 1: before new interval</span>
+<span class="kw">while</span> (i &lt; n && intervals[i][<span class="num">1</span>] &lt; newInterval[<span class="num">0</span>]) result.<span class="fn">add</span>(intervals[i++]);
+<span class="cm">// Phase 2: merge overlapping</span>
+<span class="kw">while</span> (i &lt; n && intervals[i][<span class="num">0</span>] &lt;= newInterval[<span class="num">1</span>]) {
+    newInterval[<span class="num">0</span>] = Math.<span class="fn">min</span>(newInterval[<span class="num">0</span>], intervals[i][<span class="num">0</span>]);
+    newInterval[<span class="num">1</span>] = Math.<span class="fn">max</span>(newInterval[<span class="num">1</span>], intervals[i][<span class="num">1</span>]);
+    i++;
+}
+result.<span class="fn">add</span>(newInterval);
+<span class="cm">// Phase 3: after new interval</span>
+<span class="kw">while</span> (i &lt; n) result.<span class="fn">add</span>(intervals[i++]);</pre>
+
+  <!-- Complexity -->
+  <h2>Complexity Summary</h2>
+  <table class="data-table">
+    <thead><tr><th>Problem</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Merge Intervals (LC 56)</td><td><span class="badge b-yellow">O(n log n)</span></td><td><span class="badge b-yellow">O(n)</span></td><td>Sort first, then one scan</td></tr>
+      <tr><td>Insert Interval (LC 57)</td><td><span class="badge b-green">O(n)</span></td><td><span class="badge b-yellow">O(n)</span></td><td>Input already sorted — one scan only</td></tr>
+      <tr><td>Non-overlapping Intervals (LC 435)</td><td><span class="badge b-yellow">O(n log n)</span></td><td><span class="badge b-green">O(1)</span></td><td>Sort by end, greedy count</td></tr>
+      <tr><td>Meeting Rooms II (LC 253)</td><td><span class="badge b-yellow">O(n log n)</span></td><td><span class="badge b-yellow">O(n)</span></td><td>Sort + min-heap for active meetings</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  <h2>When to Reach for Interval Patterns</h2>
+  <ul class="signal-list">
+    <li>The input contains pairs <code>[start, end]</code> representing ranges, windows, or time slots</li>
+    <li><strong>"Merge overlapping"</strong> or <strong>"remove redundant"</strong> ranges — sort by start, scan and merge</li>
+    <li><strong>"Insert a new interval"</strong> into an already-sorted list — three-phase scan, O(n)</li>
+    <li><strong>"Minimum rooms"</strong> or <strong>"maximum overlap at any point"</strong> — sort + min-heap or sweep line</li>
+    <li><strong>"Minimum removals to eliminate all overlaps"</strong> — sort by end, greedy keep earliest-ending</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Practice Ladder</h2>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Problem</th><th>Difficulty</th><th>Key Insight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Merge Intervals (LC 56)</td><td><span class="badge b-yellow">Medium</span></td><td>Sort by start, scan and merge — covered above</td></tr>
+      <tr><td>2</td><td>Insert Interval (LC 57)</td><td><span class="badge b-yellow">Medium</span></td><td>Three-phase scan on sorted input — covered above</td></tr>
+      <tr><td>3</td><td>Meeting Rooms (LC 252)</td><td><span class="badge b-green">Easy</span></td><td>Sort by start, check any adjacent overlap</td></tr>
+      <tr><td>4</td><td>Non-overlapping Intervals (LC 435)</td><td><span class="badge b-yellow">Medium</span></td><td>Sort by end, greedily keep earliest-ending interval</td></tr>
+      <tr><td>5</td><td>Meeting Rooms II (LC 253)</td><td><span class="badge b-yellow">Medium</span></td><td>Sort starts and ends separately, or sort + min-heap</td></tr>
+      <tr><td>6</td><td>Minimum Interval to Include Each Query (LC 1851)</td><td><span class="badge b-red">Hard</span></td><td>Sort intervals + queries, min-heap by interval size</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Learning Path</div>
+    <p>LC 1851 (Minimum Interval to Include Each Query) is the most challenging problem in this set. It combines sorting, a min-heap, and offline query processing in a single solution. If you can derive it without hints, the interval pattern is truly internalized. Try it before moving to Post #8.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <h3>Up Next — Post #8: Stacks & Queues</h3>
+  <p>Post #8 covers the monotonic stack — a deceptively simple structure that solves a family of "next greater element" problems in O(n). We also cover queue-based patterns and the sliding window maximum.</p>
+
+  <p style="color:var(--ink-faint); font-size:13px; margin-top:44px; font-style:italic;">
+    Interview Prep Series · Post #7 of 20
+  </p>
+
+</div>
+</main>
+
+<footer class="post-footer">
+  <strong>Interview Prep Series</strong> — Arrays & Hashing · Two Pointers · Sliding Window · Prefix Sum · Binary Search · Sorting · Linked Lists · Intervals · and 12 more.
+  <p class="next-label">Next: Stacks & Queues →</p>
+</footer>
+
+</body>
+</html>

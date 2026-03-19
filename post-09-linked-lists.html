@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linked Lists — Interview Prep Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:        #1a0a06;
+      --ink-soft:   #2e1a10;
+      --ink-faint:  #7a4a3a;
+      --paper:      #fdf6f3;
+      --paper-warm: #fdf0eb;
+      --accent:     #c45c3a;
+      --accent-alt: #1a3f7a;
+      --teal:       #0a6b6b;
+      --green:      #0e7c5b;
+      --highlight:  #e89070;
+      --code-bg:    #1a0800;
+      --code-fg:    #f0c8a8;
+      --border:     #e0c0b0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 17px;
+      line-height: 1.8;
+    }
+
+    .hero {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 72px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 50% 110%, #c45c3a22, transparent);
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--highlight), #e8b090);
+    }
+    .hero-eyebrow {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--highlight); margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: 'Lora', serif; font-size: clamp(2rem, 5.5vw, 3.4rem);
+      font-weight: 700; line-height: 1.15; max-width: 680px; margin: 0 auto 16px;
+    }
+    .hero-sub {
+      color: #9a5a4a; font-size: 15px; font-weight: 300;
+      max-width: 580px; margin: 0 auto 36px;
+    }
+    .hero-meta {
+      display: flex; justify-content: center; gap: 24px;
+      flex-wrap: wrap; font-size: 12px; color: #3a1a0a; letter-spacing: 0.04em;
+    }
+
+    .container { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+    .post-body { padding: 60px 24px 96px; }
+
+    h2 {
+      font-family: 'Lora', serif; font-size: 1.75rem; font-weight: 700;
+      color: var(--ink); margin: 52px 0 14px; line-height: 1.25;
+      padding-bottom: 10px; border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-family: 'Source Sans 3', sans-serif; font-size: 0.82rem;
+      font-weight: 600; color: var(--accent-alt); margin: 32px 0 8px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    p { margin-bottom: 16px; color: var(--ink-soft); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    .callout { border-left: 3px solid var(--accent); background: var(--paper-warm); padding: 16px 20px; margin: 24px 0; border-radius: 0 5px 5px 0; }
+    .callout-tip  { border-left-color: var(--green); }
+    .callout-note { border-left-color: var(--teal); }
+    .callout-warn { border-left-color: var(--accent); }
+    .callout-label { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+    .callout-tip  .callout-label { color: var(--green); }
+    .callout-note .callout-label { color: var(--teal); }
+    .callout p { margin: 0; font-size: 15px; }
+
+    pre {
+      background: var(--code-bg); color: var(--code-fg);
+      font-family: 'JetBrains Mono', monospace; font-size: 13px;
+      line-height: 1.7; padding: 26px 28px; border-radius: 6px;
+      overflow-x: auto; margin: 20px 0 28px; position: relative;
+    }
+    pre .lang { position: absolute; top: 10px; right: 14px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #3a1800; }
+    .kw  { color: #e89070; }
+    .fn  { color: #f0b088; }
+    .cm  { color: #b07840; font-style: italic; }
+    .tp  { color: #f0c8a8; }
+    .num { color: #f0e070; }
+    code {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.83em;
+      background: var(--paper-warm); border: 1px solid var(--border);
+      padding: 2px 5px; border-radius: 3px; color: var(--accent);
+    }
+
+    .diagram-wrap {
+      margin: 32px 0; background: white; border: 1px solid var(--border);
+      border-radius: 8px; padding: 28px 16px 20px; text-align: center;
+      box-shadow: 0 1px 12px rgba(0,0,0,0.04);
+    }
+    .diagram-caption { font-size: 12.5px; color: var(--ink-faint); margin-top: 14px; font-style: italic; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .data-table th { background: var(--ink); color: var(--paper); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); font-weight: 300; }
+    .data-table tr:nth-child(even) td { background: var(--paper-warm); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+    .b-green  { background: #d4f0e4; color: #0a6e46; }
+    .b-yellow { background: #fdf0c8; color: #8a6000; }
+    .b-red    { background: #fde4e4; color: #a01010; }
+
+    ul.signal-list { margin: 0 0 18px 24px; color: var(--ink-soft); font-weight: 300; line-height: 2; }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    .post-footer { background: var(--ink); color: #3a1a0a; text-align: center; padding: 44px 24px; font-size: 13px; }
+    .post-footer strong { color: #9a5a4a; }
+    .next-label { margin-top: 10px; color: var(--highlight); font-style: italic; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">Interview Prep Series · Post #9 of 20</div>
+  <h1>Linked Lists</h1>
+  <p class="hero-sub">Pointer manipulation without indices. Master the dummy node, in-place reversal, and the fast/slow pointer — three building blocks that underpin trees, graphs, and beyond.</p>
+  <div class="hero-meta">
+    <span>⏱ 5 min read</span>
+    <span>🔗 Data Structures</span>
+    <span>🔑 Java 8</span>
+    <span>📈 Intermediate → Advanced</span>
+  </div>
+</header>
+
+<main class="post-body">
+<div class="container">
+
+  <p>A linked list is a sequence of nodes, each holding a value and a pointer to the next node. Unlike arrays, nodes are not contiguous in memory — there is no index arithmetic, only pointer traversal. This changes everything: random access is O(n), but insertion and deletion at a known position are O(1). The interview challenge is not the data structure itself but <strong>reasoning carefully about pointer manipulation</strong> without losing references to nodes you still need.</p>
+
+  <div class="callout callout-note">
+    <div class="callout-label">Prerequisites</div>
+    <p>Post #2 (Two Pointers) — the fast/slow same-direction pattern. The linked list version is the same idea applied to a non-indexed structure.</p>
+  </div>
+
+  <!-- Three Core Patterns -->
+  <h2>Three Core Patterns</h2>
+
+  <h3>The Dummy Node</h3>
+  <p>A dummy (sentinel) head node is a placeholder prepended to the list before any operation. It eliminates the special case of modifying the real head, allowing every node — including the first — to be treated uniformly. The result is returned as <code>dummy.next</code>.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 148" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .nm { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .nl { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .ns { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#c45c3a"/>
+        </marker>
+        <marker id="arrG" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#b0b8c8"/>
+        </marker>
+      </defs>
+
+      <!-- Row 1 label -->
+      <text x="10" y="12" class="ns" fill="#7a4a3a" font-weight="600">Without dummy node</text>
+
+      <!-- Row 1 cells: y=18 -->
+      <rect x="10"  y="18" width="60" height="30" rx="4" fill="#fde4e4" stroke="#c45c3a" stroke-width="1.5"/>
+      <rect x="120" y="18" width="60" height="30" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1"/>
+      <rect x="230" y="18" width="60" height="30" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1"/>
+      <rect x="340" y="18" width="60" height="30" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1"/>
+      <text x="40"  y="38" class="nm" fill="#c45c3a" text-anchor="middle">1</text>
+      <text x="150" y="38" class="nm" fill="#7a4a3a" text-anchor="middle">2</text>
+      <text x="260" y="38" class="nm" fill="#7a4a3a" text-anchor="middle">3</text>
+      <text x="370" y="38" class="nm" fill="#7a4a3a" text-anchor="middle">null</text>
+      <line x1="70"  y1="33" x2="113" y2="33" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="180" y1="33" x2="223" y2="33" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="290" y1="33" x2="333" y2="33" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- Row 1 pointer label below cell, annotation right -->
+      <text x="40"  y="60" class="ns" fill="#c45c3a" text-anchor="middle">head</text>
+      <text x="430" y="38" class="ns" fill="#c45c3a">← modifying head requires special case</text>
+
+      <!-- Row 2 label -->
+      <text x="10" y="82" class="ns" fill="#0e7c5b" font-weight="600">With dummy node</text>
+
+      <!-- Row 2 cells: y=90 -->
+      <rect x="10"  y="90" width="60" height="30" rx="4" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.8" stroke-dasharray="4"/>
+      <rect x="120" y="90" width="60" height="30" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1"/>
+      <rect x="230" y="90" width="60" height="30" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1"/>
+      <rect x="340" y="90" width="60" height="30" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1"/>
+      <rect x="450" y="90" width="60" height="30" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1"/>
+      <text x="40"  y="110" class="nm" fill="#0e7c5b" text-anchor="middle">D</text>
+      <text x="150" y="110" class="nm" fill="#7a4a3a" text-anchor="middle">1</text>
+      <text x="260" y="110" class="nm" fill="#7a4a3a" text-anchor="middle">2</text>
+      <text x="370" y="110" class="nm" fill="#7a4a3a" text-anchor="middle">3</text>
+      <text x="480" y="110" class="nm" fill="#7a4a3a" text-anchor="middle">null</text>
+      <line x1="70"  y1="105" x2="113" y2="105" stroke="#0e7c5b" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="180" y1="105" x2="223" y2="105" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="290" y1="105" x2="333" y2="105" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="400" y1="105" x2="443" y2="105" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- Row 2 pointer label below cell -->
+      <text x="40"  y="132" class="ns" fill="#0e7c5b" text-anchor="middle">dummy</text>
+      <text x="330" y="140" class="ns" fill="#0e7c5b" text-anchor="middle">↑ every node has a predecessor — return dummy.next</text>
+    </svg>
+    <p class="diagram-caption">Fig 1. The dummy node (D) gives node 1 a predecessor, eliminating the head special case. Return <code>dummy.next</code> as the result.</p>
+  </div>
+
+  <h3>In-Place Reversal</h3>
+  <p>Reversing a linked list in-place requires three pointers: <code>prev</code>, <code>curr</code>, and <code>next</code>. On each step: save <code>curr.next</code> before overwriting it, redirect the pointer backward, then advance all three. No extra space needed.</p>
+
+  <h3>Fast / Slow Pointers</h3>
+  <p>Two pointers starting at the head, advancing at different rates — fast moves two steps per iteration, slow moves one. When fast reaches the end, slow is at the midpoint. If the list has a cycle, fast and slow will eventually meet inside it. This is the same pattern from Post #2, now applied to a non-indexed structure.</p>
+
+  <!-- Example 1 -->
+  <h2>Example 1 — Reverse Linked List</h2>
+  <p><em>LeetCode #206 · Easy · In-place reversal</em></p>
+  <p>Given the head of a singly linked list, reverse the list and return the new head.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>1 → 2 → 3 → 4 → 5 → null</code> → <strong><code>5 → 4 → 3 → 2 → 1 → null</code></strong></p>
+  </div>
+
+  <p>Three pointers carry the state: <code>prev</code> (the new next for curr), <code>curr</code> (the node being redirected), and <code>next</code> (saved before the pointer is overwritten). Each iteration is O(1); the full pass is O(n).</p>
+
+  <div class="diagram-wrap">
+    <svg     <svg     <svg     <svg     <svg     <svg     <svg     <svg     <svg     <svg     <svg     <svg     <svg viewBox="0 0 660 286" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .f2m { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+          .f2l { font-family:'Source Sans 3',sans-serif; font-size:12px; font-weight:600; }
+          .f2s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="fwd" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#c45c3a"/>
+        </marker>
+        <marker id="leftArrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto-start-reverse">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#0e7c5b"/>
+        </marker>
+      </defs>
+
+      <!-- null-left: x=78..112 | [1]=160..220 cx=190 | [2]=250..310 cx=280  -->
+      <!-- [3]=340..400 cx=370  | null-right: x=424..460                       -->
+      <!-- null arrow: 46px  inter-node arrows: 23px  bwd arrows: 23px         -->
+
+      <!-- ════ ROW 1: Initial  prev=null  curr=[1] ════ -->
+      <text x="38" y="29" class="f2l" fill="#7a4a3a" text-anchor="middle">Initial</text>
+      <rect x="160" y="14" width="60" height="34" rx="4" fill="#fde4e4" stroke="#c45c3a" stroke-width="1.8"/><text x="190" y="36" class="f2m" fill="#c45c3a" text-anchor="middle">1</text>
+      <rect x="250" y="14" width="60" height="34" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.8"/><text x="280" y="36" class="f2m" fill="#e0c0b0" text-anchor="middle">2</text>
+      <rect x="340" y="14" width="60" height="34" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.8"/><text x="370" y="36" class="f2m" fill="#e0c0b0" text-anchor="middle">3</text>
+      <line x1="220" y1="31" x2="243" y2="31" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#fwd)"/> <line x1="310" y1="31" x2="333" y2="31" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#fwd)"/> <line x1="400" y1="31" x2="423" y2="31" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#fwd)"/>
+      <rect x="424" y="22" width="36" height="18" rx="3" fill="#f0ece8" stroke="#d0c8c0" stroke-width="1"/><text x="442" y="35" class="f2s" fill="#9a9090" text-anchor="middle">null</text>
+      <text x="38" y="62" class="f2s" fill="#7a4a3a" text-anchor="middle">prev=null</text>
+      <text x="190" y="62" class="f2s" fill="#c45c3a" text-anchor="middle">curr</text>
+      <line x1="14" y1="76" x2="646" y2="76" stroke="#f0e8e0" stroke-width="1" stroke-dasharray="3"/>
+
+      <!-- ════ ROW 2: Step 1  prev=[1]  curr=[2]  next=[3] ════ -->
+      <!-- null<-[1]   [2]->[3]->null                            -->
+      <text x="38" y="97" class="f2l" fill="#7a4a3a" text-anchor="middle">Step 1</text>
+      <rect x="78" y="90" width="34" height="18" rx="3" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1"/><text x="95" y="103" class="f2s" fill="#0e7c5b" text-anchor="middle">null</text>
+      <line x1="160" y1="99" x2="114" y2="99" stroke="#0e7c5b" stroke-width="1.5" marker-end="url(#leftArrow)"/>
+      <rect x="160" y="82" width="60" height="34" rx="4" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.8"/><text x="190" y="104" class="f2m" fill="#0e7c5b" text-anchor="middle">1</text>
+      <rect x="250" y="82" width="60" height="34" rx="4" fill="#fde4e4" stroke="#c45c3a" stroke-width="1.8"/><text x="280" y="104" class="f2m" fill="#c45c3a" text-anchor="middle">2</text>
+      <rect x="340" y="82" width="60" height="34" rx="4" fill="#e8eef8" stroke="#1a3f7a" stroke-width="1.8"/><text x="370" y="104" class="f2m" fill="#1a3f7a" text-anchor="middle">3</text>
+      <line x1="310" y1="99" x2="333" y2="99" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#fwd)"/> <line x1="400" y1="99" x2="423" y2="99" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#fwd)"/>
+      <rect x="424" y="90" width="36" height="18" rx="3" fill="#f0ece8" stroke="#d0c8c0" stroke-width="1"/><text x="442" y="103" class="f2s" fill="#9a9090" text-anchor="middle">null</text>
+      <text x="190" y="130" class="f2s" fill="#0e7c5b" text-anchor="middle">prev</text>
+      <text x="280" y="130" class="f2s" fill="#c45c3a" text-anchor="middle">curr</text>
+      <text x="370" y="130" class="f2s" fill="#1a3f7a" text-anchor="middle">next</text>
+      <line x1="14" y1="144" x2="646" y2="144" stroke="#f0e8e0" stroke-width="1" stroke-dasharray="3"/>
+
+      <!-- ════ ROW 3: Step 2  prev=[2]  curr=[3]  next=null ════ -->
+      <!-- null<-[1]<-[2]   [3]->null                             -->
+      <text x="38" y="165" class="f2l" fill="#7a4a3a" text-anchor="middle">Step 2</text>
+      <rect x="78" y="158" width="34" height="18" rx="3" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1"/><text x="95" y="171" class="f2s" fill="#0e7c5b" text-anchor="middle">null</text>
+      <line x1="160" y1="167" x2="114" y2="167" stroke="#0e7c5b" stroke-width="1.5" marker-end="url(#leftArrow)"/>
+      <rect x="160" y="150" width="60" height="34" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.8"/><text x="190" y="172" class="f2m" fill="#e0c0b0" text-anchor="middle">1</text>
+      <rect x="250" y="150" width="60" height="34" rx="4" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.8"/><text x="280" y="172" class="f2m" fill="#0e7c5b" text-anchor="middle">2</text>
+      <rect x="340" y="150" width="60" height="34" rx="4" fill="#fde4e4" stroke="#c45c3a" stroke-width="1.8"/><text x="370" y="172" class="f2m" fill="#c45c3a" text-anchor="middle">3</text>
+      <line x1="250" y1="167" x2="227" y2="167" stroke="#0e7c5b" stroke-width="1.5" marker-end="url(#leftArrow)"/>
+      <line x1="400" y1="167" x2="423" y2="167" stroke="#c45c3a" stroke-width="1.5" marker-end="url(#fwd)"/>
+      <rect x="424" y="158" width="36" height="18" rx="3" fill="#f0ece8" stroke="#d0c8c0" stroke-width="1"/><text x="442" y="171" class="f2s" fill="#9a9090" text-anchor="middle">null</text>
+      <text x="280" y="198" class="f2s" fill="#0e7c5b" text-anchor="middle">prev</text>
+      <text x="370" y="198" class="f2s" fill="#c45c3a" text-anchor="middle">curr</text>
+      <text x="442" y="198" class="f2s" fill="#7a4a3a" text-anchor="middle">next=null</text>
+      <line x1="14" y1="212" x2="646" y2="212" stroke="#f0e8e0" stroke-width="1" stroke-dasharray="3"/>
+
+      <!-- ════ ROW 4: Step 3  prev=[3]  curr=null ════ -->
+      <!-- null<-[1]<-[2]<-[3]                          -->
+      <text x="38" y="233" class="f2l" fill="#7a4a3a" text-anchor="middle">Step 3</text>
+      <rect x="78" y="226" width="34" height="18" rx="3" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1"/><text x="95" y="239" class="f2s" fill="#0e7c5b" text-anchor="middle">null</text>
+      <line x1="160" y1="235" x2="114" y2="235" stroke="#0e7c5b" stroke-width="1.5" marker-end="url(#leftArrow)"/>
+      <rect x="160" y="218" width="60" height="34" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.8"/><text x="190" y="240" class="f2m" fill="#e0c0b0" text-anchor="middle">1</text>
+      <rect x="250" y="218" width="60" height="34" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.8"/><text x="280" y="240" class="f2m" fill="#e0c0b0" text-anchor="middle">2</text>
+      <rect x="340" y="218" width="60" height="34" rx="4" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.8"/><text x="370" y="240" class="f2m" fill="#0e7c5b" text-anchor="middle">3</text>
+      <line x1="250" y1="235" x2="227" y2="235" stroke="#0e7c5b" stroke-width="1.5" marker-end="url(#leftArrow)"/>
+      <line x1="340" y1="235" x2="317" y2="235" stroke="#0e7c5b" stroke-width="1.5" marker-end="url(#leftArrow)"/>
+      <text x="370" y="266" class="f2s" fill="#0e7c5b" text-anchor="middle">prev</text>
+      <text x="410" y="258" class="f2s" fill="#7a4a3a">curr=null  →  return prev=[3]  ✓</text>
+
+      <line x1="14" y1="274" x2="646" y2="274" stroke="#e0c0b0" stroke-width="1"/>
+      <text x="14" y="284" class="f2s" fill="#7a4a3a">prev (green) · curr (coral) · next (blue). Each step: save next, redirect curr.next to prev, advance both.</text>
+    </svg>
+    <p class="diagram-caption">Fig 2. Three-pointer reversal trace on [1→2→3]. Each step: save next, redirect curr.next to prev, advance both. After n steps, prev is the new head.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public</span> ListNode <span class="fn">reverseList</span>(ListNode head) {
+    ListNode prev = <span class="kw">null</span>;
+    ListNode curr = head;
+
+    <span class="kw">while</span> (curr != <span class="kw">null</span>) {
+        ListNode next = curr.next;  <span class="cm">// save next before overwriting</span>
+        curr.next = prev;           <span class="cm">// redirect pointer backward</span>
+        prev = curr;                <span class="cm">// advance prev</span>
+        curr = next;                <span class="cm">// advance curr</span>
+    }
+
+    <span class="kw">return</span> prev;  <span class="cm">// prev is the new head</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(1)</span></pre>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">Common Mistake</div>
+    <p>Forgetting to save <code>curr.next</code> before overwriting it. Once <code>curr.next = prev</code> executes, the original next node is unreachable unless you stored it first. Always: <strong>save, redirect, advance</strong>.</p>
+  </div>
+
+  <!-- Example 2 -->
+  <h2>Example 2 — Linked List Cycle Detection</h2>
+  <p><em>LeetCode #141 · Easy · Fast/slow pointers</em></p>
+  <p>Given the head of a linked list, return <code>true</code> if the list contains a cycle, <code>false</code> otherwise. A cycle exists when a node's <code>next</code> pointer points back to a previous node in the list.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>3 → 2 → 0 → -4 → (back to 2)</code> → <strong>true</strong><br>
+    <code>1 → 2 → null</code> → <strong>false</strong></p>
+  </div>
+
+  <p>Floyd's cycle detection algorithm: advance <code>fast</code> by two nodes and <code>slow</code> by one per iteration. If there is no cycle, <code>fast</code> reaches <code>null</code> first. If there is a cycle, <strong>fast and slow must eventually meet</strong> inside it — the faster pointer laps the slower one within the cycle.</p>
+
+  <div class="diagram-wrap">
+    <svg     <svg     <svg viewBox="0 0 660 296" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .f3m { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .f3l { font-family:'Source Sans 3',sans-serif; font-size:12px; font-weight:600; }
+          .f3s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="f3fwd" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#c45c3a"/>
+        </marker>
+      </defs>
+
+      <!-- Nodes: [3]=90..146 [2]=170..226 [0]=250..306 [-4]=330..386        -->
+      <!-- Cycle arc goes ABOVE each row. 28px clearance above each row top.  -->
+      <!-- slow=green  fast=blue  meet=green                                  -->
+      <!-- Row tops: 40,100,160,220  stride=60  centers: 56,116,176,236       -->
+
+      <!-- ════ ROW 1: Start  slow=[3]  fast=[3] ════ -->
+      <text x="278" y="12" class="f3s" fill="#c45c3a" text-anchor="middle">[-4] → [2] (cycle)</text>
+      <path d="M 386 56 Q 390 16 278 16 Q 198 16 198 40" fill="none" stroke="#c45c3a" stroke-width="1.4" stroke-dasharray="5" marker-end="url(#f3fwd)"/>
+      <text x="40" y="57" class="f3l" fill="#7a4a3a" text-anchor="middle">Start</text>
+      <rect x="90" y="40" width="56" height="32" rx="4" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.5"/><text x="118" y="61" class="f3m" fill="#0e7c5b" text-anchor="middle">3</text>
+      <rect x="170" y="40" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="198" y="61" class="f3m" fill="#e0c0b0" text-anchor="middle">2</text>
+      <rect x="250" y="40" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="278" y="61" class="f3m" fill="#e0c0b0" text-anchor="middle">0</text>
+      <rect x="330" y="40" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="358" y="61" class="f3m" fill="#e0c0b0" text-anchor="middle">-4</text>
+      <line x1="146" y1="56" x2="163" y2="56" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/> <line x1="226" y1="56" x2="243" y2="56" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/> <line x1="306" y1="56" x2="323" y2="56" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/>
+      <text x="118" y="86" class="f3s" fill="#0e7c5b" text-anchor="middle">slow · fast</text>
+      <line x1="14" y1="94" x2="646" y2="94" stroke="#f0e8e0" stroke-width="1" stroke-dasharray="3"/>
+
+      <!-- ════ ROW 2: Step 1  slow=[2]  fast=[0] ════ -->
+      <path d="M 386 116 Q 390 76 278 76 Q 198 76 198 100" fill="none" stroke="#c45c3a" stroke-width="1.4" stroke-dasharray="5" marker-end="url(#f3fwd)"/>
+      <text x="40" y="117" class="f3l" fill="#7a4a3a" text-anchor="middle">Step 1</text>
+      <rect x="90" y="100" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="118" y="121" class="f3m" fill="#e0c0b0" text-anchor="middle">3</text>
+      <rect x="170" y="100" width="56" height="32" rx="4" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.5"/><text x="198" y="121" class="f3m" fill="#0e7c5b" text-anchor="middle">2</text>
+      <rect x="250" y="100" width="56" height="32" rx="4" fill="#e8eef8" stroke="#1a3f7a" stroke-width="1.5"/><text x="278" y="121" class="f3m" fill="#1a3f7a" text-anchor="middle">0</text>
+      <rect x="330" y="100" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="358" y="121" class="f3m" fill="#e0c0b0" text-anchor="middle">-4</text>
+      <line x1="146" y1="116" x2="163" y2="116" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/> <line x1="226" y1="116" x2="243" y2="116" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/> <line x1="306" y1="116" x2="323" y2="116" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/>
+      <text x="198" y="146" class="f3s" fill="#0e7c5b" text-anchor="middle">slow</text>
+      <text x="278" y="146" class="f3s" fill="#1a3f7a" text-anchor="middle">fast</text>
+      <line x1="14" y1="154" x2="646" y2="154" stroke="#f0e8e0" stroke-width="1" stroke-dasharray="3"/>
+
+      <!-- ════ ROW 3: Step 2  slow=[0]  fast=[2] ════ -->
+      <path d="M 386 176 Q 390 136 278 136 Q 198 136 198 160" fill="none" stroke="#c45c3a" stroke-width="1.4" stroke-dasharray="5" marker-end="url(#f3fwd)"/>
+      <text x="40" y="177" class="f3l" fill="#7a4a3a" text-anchor="middle">Step 2</text>
+      <rect x="90" y="160" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="118" y="181" class="f3m" fill="#e0c0b0" text-anchor="middle">3</text>
+      <rect x="170" y="160" width="56" height="32" rx="4" fill="#e8eef8" stroke="#1a3f7a" stroke-width="1.5"/><text x="198" y="181" class="f3m" fill="#1a3f7a" text-anchor="middle">2</text>
+      <rect x="250" y="160" width="56" height="32" rx="4" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.5"/><text x="278" y="181" class="f3m" fill="#0e7c5b" text-anchor="middle">0</text>
+      <rect x="330" y="160" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="358" y="181" class="f3m" fill="#e0c0b0" text-anchor="middle">-4</text>
+      <line x1="146" y1="176" x2="163" y2="176" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/> <line x1="226" y1="176" x2="243" y2="176" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/> <line x1="306" y1="176" x2="323" y2="176" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/>
+      <text x="278" y="206" class="f3s" fill="#0e7c5b" text-anchor="middle">slow</text>
+      <text x="198" y="206" class="f3s" fill="#1a3f7a" text-anchor="middle">fast</text>
+      <line x1="14" y1="214" x2="646" y2="214" stroke="#f0e8e0" stroke-width="1" stroke-dasharray="3"/>
+
+      <!-- ════ ROW 4: Step 3  slow=[-4]  fast=[-4]  MEET ════ -->
+      <path d="M 386 236 Q 390 196 278 196 Q 198 196 198 220" fill="none" stroke="#c45c3a" stroke-width="1.4" stroke-dasharray="5" marker-end="url(#f3fwd)"/>
+      <text x="40" y="237" class="f3l" fill="#7a4a3a" text-anchor="middle">Step 3</text>
+      <rect x="90" y="220" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="118" y="241" class="f3m" fill="#e0c0b0" text-anchor="middle">3</text>
+      <rect x="170" y="220" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="198" y="241" class="f3m" fill="#e0c0b0" text-anchor="middle">2</text>
+      <rect x="250" y="220" width="56" height="32" rx="4" fill="#fdf0eb" stroke="#e0c0b0" stroke-width="1.2"/><text x="278" y="241" class="f3m" fill="#e0c0b0" text-anchor="middle">0</text>
+      <rect x="330" y="220" width="56" height="32" rx="4" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.5"/><text x="358" y="241" class="f3m" fill="#0e7c5b" text-anchor="middle">-4</text>
+      <line x1="146" y1="236" x2="163" y2="236" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/> <line x1="226" y1="236" x2="243" y2="236" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/> <line x1="306" y1="236" x2="323" y2="236" stroke="#c45c3a" stroke-width="1.4" marker-end="url(#f3fwd)"/>
+      <text x="358" y="266" class="f3s" fill="#0e7c5b" text-anchor="middle">slow · fast</text>
+      <text x="428" y="266" class="f3s" fill="#0e7c5b">MEET  →  cycle detected  ✓</text>
+
+      <line x1="14" y1="280" x2="646" y2="280" stroke="#e0c0b0" stroke-width="1"/>
+      <text x="14" y="292" class="f3s" fill="#7a4a3a">slow (green) · fast (blue) · slow·fast at same node (green). Each step: slow +1, fast +2. Cycle forces them to meet.</text>
+    </svg>
+    <p class="diagram-caption">Fig 3. Floyd's algorithm on 3→2→0→-4→(2). Fast laps slow inside the cycle within 3 steps. No cycle: fast reaches null first.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public boolean</span> <span class="fn">hasCycle</span>(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+
+    <span class="kw">while</span> (fast != <span class="kw">null</span> && fast.next != <span class="kw">null</span>) {
+        slow = slow.next;        <span class="cm">// advance one step</span>
+        fast = fast.next.next;   <span class="cm">// advance two steps</span>
+
+        <span class="kw">if</span> (slow == fast) <span class="kw">return true</span>;  <span class="cm">// cycle detected</span>
+    }
+
+    <span class="kw">return false</span>;  <span class="cm">// fast reached end: no cycle</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(1)</span></pre>
+
+  <div class="callout callout-note">
+    <div class="callout-label">Why They Must Meet</div>
+    <p>In a cycle of length L, fast gains one node on slow per iteration. After at most L steps inside the cycle, fast has lapped slow and they occupy the same node. The gap between them decreases by 1 each iteration until it reaches 0.</p>
+  </div>
+
+  <!-- Template -->
+  <h2>Universal Template</h2>
+  <p>The three linked list skeletons that cover the majority of interview problems:</p>
+
+<pre><span class="lang">Java 8 — Pattern 1: Dummy Node</span>ListNode dummy = <span class="kw">new</span> ListNode(<span class="num">0</span>);
+dummy.next = head;
+ListNode curr = dummy;
+<span class="cm">// ... manipulate list ...</span>
+<span class="kw">return</span> dummy.next;</pre>
+
+<pre><span class="lang">Java 8 — Pattern 2: In-Place Reversal</span>ListNode prev = <span class="kw">null</span>;
+ListNode curr = head;
+<span class="kw">while</span> (curr != <span class="kw">null</span>) {
+    ListNode next = curr.next;  <span class="cm">// 1. save</span>
+    curr.next = prev;           <span class="cm">// 2. redirect</span>
+    prev = curr;                <span class="cm">// 3. advance prev</span>
+    curr = next;                <span class="cm">// 4. advance curr</span>
+}
+<span class="kw">return</span> prev;  <span class="cm">// new head</span></pre>
+
+<pre><span class="lang">Java 8 — Pattern 3: Fast / Slow Pointers</span>ListNode slow = head;
+ListNode fast = head;
+<span class="kw">while</span> (fast != <span class="kw">null</span> && fast.next != <span class="kw">null</span>) {
+    slow = slow.next;
+    fast = fast.next.next;
+    <span class="cm">// when loop ends: slow is at midpoint (no cycle)</span>
+    <span class="cm">// or slow == fast (cycle detected)</span>
+}</pre>
+
+  <!-- Complexity -->
+  <h2>Complexity Summary</h2>
+  <table class="data-table">
+    <thead><tr><th>Operation</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Traversal</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-green">O(1)</span></td><td>No index arithmetic — must follow pointers</td></tr>
+      <tr><td>Insert / delete at known node</td><td><span class="badge b-green">O(1)</span></td><td><span class="badge b-green">O(1)</span></td><td>Update two pointers; finding the node is O(n)</td></tr>
+      <tr><td>Reverse (iterative)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-green">O(1)</span></td><td>Three-pointer technique — covered above</td></tr>
+      <tr><td>Cycle detection (Floyd's)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-green">O(1)</span></td><td>Fast/slow converge within one cycle length</td></tr>
+      <tr><td>Find middle node</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-green">O(1)</span></td><td>Fast/slow: when fast ends, slow is at middle</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  <h2>When to Reach for These Patterns</h2>
+  <ul class="signal-list">
+    <li>Modifying the head node or inserting at the front — use a <strong>dummy node</strong></li>
+    <li>"Reverse" or "rotate" a list or a sublist — <strong>in-place reversal</strong></li>
+    <li>"Find the middle" or "does a cycle exist" — <strong>fast/slow pointers</strong></li>
+    <li>"Remove nth node from end" — fast/slow with an n-step head start on fast</li>
+    <li>"Check if palindrome" — find middle with fast/slow, reverse second half, compare</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Practice Ladder</h2>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Problem</th><th>Difficulty</th><th>Key Insight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Reverse Linked List (LC 206)</td><td><span class="badge b-green">Easy</span></td><td>In-place reversal — covered above</td></tr>
+      <tr><td>2</td><td>Linked List Cycle (LC 141)</td><td><span class="badge b-green">Easy</span></td><td>Fast/slow cycle detection — covered above</td></tr>
+      <tr><td>3</td><td>Middle of the Linked List (LC 876)</td><td><span class="badge b-green">Easy</span></td><td>Fast/slow: when fast ends, slow is at middle</td></tr>
+      <tr><td>4</td><td>Remove Nth Node From End (LC 19)</td><td><span class="badge b-yellow">Medium</span></td><td>Fast/slow with n-step gap between pointers</td></tr>
+      <tr><td>5</td><td>Reorder List (LC 143)</td><td><span class="badge b-yellow">Medium</span></td><td>Find middle + reverse second half + merge</td></tr>
+      <tr><td>6</td><td>Merge K Sorted Lists (LC 23)</td><td><span class="badge b-red">Hard</span></td><td>Min-heap or divide-and-conquer merge</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Learning Path</div>
+    <p>LC 143 (Reorder List) chains all three patterns together: find the middle with fast/slow, reverse the second half in-place, then merge the two halves using a dummy node. If you can solve it cleanly without hints, all three core patterns are internalized. Try it before moving to Post #8.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <h3>Up Next — Post #10: Trees & DFS</h3>
+  <p>Post #10 covers trees and depth-first search — recursive traversals, path problems, and BST operations. Linked list pointer manipulation is the direct precursor to the node-based thinking trees require.</p>
+
+  <p style="color:var(--ink-faint); font-size:13px; margin-top:44px; font-style:italic;">
+    Interview Prep Series · Post #9 of 20
+  </p>
+
+</div>
+</main>
+
+<footer class="post-footer">
+  <strong>Interview Prep Series</strong> — Arrays & Hashing · Two Pointers · Sliding Window · Prefix Sum · Binary Search · Sorting Strategies · Linked Lists · and 13 more.
+  <p class="next-label">Next: Trees &amp; DFS →</p>
+</footer>
+
+</body>
+</html>
