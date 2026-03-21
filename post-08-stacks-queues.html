@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stacks & Queues — Interview Prep Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:        #0e0818;
+      --ink-soft:   #1e1030;
+      --ink-faint:  #6a4a9a;
+      --paper:      #f8f4ff;
+      --paper-warm: #f2eef8;
+      --accent:     #5a3a8f;
+      --accent-alt: #1a3f7a;
+      --orange:     #b5460f;
+      --green:      #0e7c5b;
+      --highlight:  #9a7ad0;
+      --code-bg:    #080410;
+      --code-fg:    #c8a8f8;
+      --border:     #c8b8e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--paper); color: var(--ink); font-family: 'Source Sans 3', sans-serif; font-size: 17px; line-height: 1.8; }
+
+    .hero { background: var(--ink); color: var(--paper); padding: 72px 24px 56px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 110%, #5a3a8f22, transparent); }
+    .hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--highlight), #c8a8f8); }
+    .hero-eyebrow { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--highlight); margin-bottom: 24px; }
+    .hero h1 { font-family: 'Lora', serif; font-size: clamp(2rem, 5.5vw, 3.4rem); font-weight: 700; line-height: 1.15; max-width: 680px; margin: 0 auto 16px; }
+    .hero-sub { color: #7a5aaa; font-size: 15px; font-weight: 300; max-width: 580px; margin: 0 auto 36px; }
+    .hero-meta { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; font-size: 12px; color: #7a5aaa; letter-spacing: 0.04em; }
+
+    .container { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+    .post-body { padding: 60px 24px 96px; }
+
+    h2 { font-family: 'Lora', serif; font-size: 1.75rem; font-weight: 700; color: var(--ink); margin: 52px 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+    h3 { font-family: 'Source Sans 3', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--accent-alt); margin: 32px 0 8px; letter-spacing: 0.06em; text-transform: uppercase; }
+    p { margin-bottom: 16px; color: var(--ink-soft); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    .callout { border-left: 3px solid var(--accent); background: var(--paper-warm); padding: 16px 20px; margin: 24px 0; border-radius: 0 5px 5px 0; }
+    .callout-tip  { border-left-color: var(--green); }
+    .callout-note { border-left-color: var(--accent-alt); }
+    .callout-label { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+    .callout-tip  .callout-label { color: var(--green); }
+    .callout-note .callout-label { color: var(--accent-alt); }
+    .callout p { margin: 0; font-size: 15px; }
+
+    pre { background: var(--code-bg); color: var(--code-fg); font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; padding: 26px 28px; border-radius: 6px; overflow-x: auto; margin: 20px 0 28px; position: relative; }
+    pre .lang { position: absolute; top: 10px; right: 14px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #1a0830; }
+    .kw  { color: #9a7ad0; }
+    .fn  { color: #b898e8; }
+    .cm  { color: #7a5aa0; font-style: italic; }
+    .tp  { color: #c8a8f8; }
+    .num { color: #f0c878; }
+    .str { color: #a8d8a8; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.83em; background: var(--paper-warm); border: 1px solid var(--border); padding: 2px 5px; border-radius: 3px; color: var(--orange); }
+
+    .diagram-wrap { margin: 32px 0; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 28px 16px 20px; text-align: center; box-shadow: 0 1px 12px rgba(0,0,0,0.04); }
+    .diagram-caption { font-size: 12.5px; color: var(--ink-faint); margin-top: 14px; font-style: italic; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .data-table th { background: var(--ink); color: var(--paper); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); font-weight: 300; }
+    .data-table tr:nth-child(even) td { background: var(--paper-warm); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+    .b-green  { background: #d4f0e4; color: #0a6e46; }
+    .b-yellow { background: #fdf0c8; color: #8a6000; }
+    .b-red    { background: #fde4e4; color: #a01010; }
+
+    ul.signal-list { margin: 0 0 18px 24px; color: var(--ink-soft); font-weight: 300; line-height: 2; }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    .post-footer { background: var(--ink); color: #1e0c40; text-align: center; padding: 44px 24px; font-size: 13px; }
+    .post-footer strong { color: #7a5aaa; }
+    .next-label { margin-top: 10px; color: var(--highlight); font-style: italic; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">Interview Prep Series · Post #8 of 20</div>
+  <h1>Stacks & Queues</h1>
+  <p class="hero-sub">Last in, first out. First in, first out. Two access patterns that unlock a surprising range of problems — especially the monotonic stack, which solves an entire family of next-greater-element problems in O(n).</p>
+  <div class="hero-meta">
+    <span>⏱ 5 min read</span>
+    <span>🗂 Data Structures</span>
+    <span>🔑 Java 8</span>
+    <span>📈 Intermediate → Advanced</span>
+  </div>
+</header>
+
+<main class="post-body">
+<div class="container">
+
+  <p>A stack is a collection with one rule: the last element added is the first removed (LIFO). A queue enforces the opposite: first in, first out (FIFO). Both provide O(1) push and pop. Their power in interviews comes not from their basic operations but from <strong>what they remember</strong> — a stack remembers the order elements arrived; a monotonic stack remembers the last element that was larger or smaller than the current one. That selective memory reduces problems that seem to need O(n²) comparisons down to O(n).</p>
+
+  <!-- Three Patterns -->
+  <h2>Three Core Patterns</h2>
+
+  <h3>Stack — Matching & Validation</h3>
+  <p>Push opening elements onto the stack. When a closing element arrives, pop and verify it matches. If the stack is empty at the end, the input is valid. This handles parenthesis matching, HTML tag validation, and any problem involving nested structure.</p>
+
+  <h3>Monotonic Stack — Next Greater / Smaller Element</h3>
+  <p>Maintain a stack that is always sorted (either increasing or decreasing). When a new element violates the order, pop elements until the invariant is restored — each popped element has found its answer. One pass, O(n) total. Each element is pushed once and popped at most once — a fixed budget of 2n operations regardless of how the <code>while</code> loop distributes them. Amortized O(1) per element.</p>
+
+  <h3>Queue / Deque — Sliding Window Maximum</h3>
+  <p>Maintain a deque of indices whose values are in decreasing order. When the window slides, remove the front if it falls outside the window, and remove the back while the back value is smaller than the incoming element. The front always holds the window maximum.</p>
+
+  <!-- Example 1 -->
+  <h2>Example 1 — Valid Parentheses</h2>
+  <p><em>LeetCode #20 · Easy · Stack matching</em></p>
+  <p>Given a string containing only <code>'('</code>, <code>')'</code>, <code>'{'</code>, <code>'}'</code>, <code>'['</code>, <code>']'</code>, determine if the input string is valid. Every opening bracket must be closed by the same type in the correct order.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>"()[]{}"`&nbsp;</code>→ <strong>true</strong><br>
+    <code>"([)]"&nbsp;&nbsp;</code>→ <strong>false</strong><br>
+    <code>"{[]}"&nbsp;&nbsp;</code>→ <strong>true</strong></p>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 182" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .v1m { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .v1l { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .v1s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+      </defs>
+
+      <!-- Input string: { [ ] } -->
+      <text x="10" y="18" class="v1s" fill="#6a4a9a" font-weight="600">Input: { [ ] }</text>
+
+      <!-- Stack visualization: 4 rows, each showing state after processing one char -->
+      <!-- Row height=34, gap=10, start y=28 -->
+
+      <!-- Step 1: char='{' push -->
+      <rect x="10" y="28" width="138" height="30" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <text x="79"  y="47" class="v1s" fill="#6a4a9a" text-anchor="middle">char='{'  push</text>
+      <rect x="160" y="28" width="36" height="30" rx="3" fill="#5a3a8f" opacity="0.2" stroke="#5a3a8f" stroke-width="1.5"/>
+      <text x="178" y="47" class="v1m" fill="#5a3a8f" text-anchor="middle">{</text>
+      <text x="210" y="47" class="v1s" fill="#9a7ad0">← top</text>
+      <text x="600" y="47" class="v1s" fill="#6a4a9a" text-anchor="middle">stack = [ { ]</text>
+
+      <!-- Step 2: char='[' push -->
+      <rect x="10" y="66" width="138" height="30" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <text x="79"  y="85" class="v1s" fill="#6a4a9a" text-anchor="middle">char='['  push</text>
+      <rect x="160" y="66" width="36" height="30" rx="3" fill="#5a3a8f" opacity="0.1" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="198" y="66" width="36" height="30" rx="3" fill="#5a3a8f" opacity="0.2" stroke="#5a3a8f" stroke-width="1.5"/>
+      <text x="178" y="85" class="v1m" fill="#9a7ad0" text-anchor="middle">{</text>
+      <text x="216" y="85" class="v1m" fill="#5a3a8f" text-anchor="middle">[</text>
+      <text x="248" y="85" class="v1s" fill="#9a7ad0">← top</text>
+      <text x="600" y="85" class="v1s" fill="#6a4a9a" text-anchor="middle">stack = [ {, [ ]</text>
+
+      <!-- Step 3: char=']' pop — matches '[' ✓ -->
+      <rect x="10" y="104" width="138" height="30" rx="3" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.2"/>
+      <text x="79"  y="123" class="v1s" fill="#0e7c5b" text-anchor="middle">char=']'  pop '[' ✓</text>
+      <rect x="160" y="104" width="36" height="30" rx="3" fill="#5a3a8f" opacity="0.2" stroke="#5a3a8f" stroke-width="1.5"/>
+      <text x="178" y="123" class="v1m" fill="#5a3a8f" text-anchor="middle">{</text>
+      <text x="210" y="123" class="v1s" fill="#9a7ad0">← top</text>
+      <text x="600" y="123" class="v1s" fill="#0e7c5b" text-anchor="middle">stack = [ { ]</text>
+
+      <!-- Step 4: char='}' pop — matches '{' ✓ -->
+      <rect x="10" y="142" width="138" height="30" rx="3" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.2"/>
+      <text x="79"  y="161" class="v1s" fill="#0e7c5b" text-anchor="middle">char='}'  pop '{' ✓</text>
+      <rect x="160" y="142" width="80" height="30" rx="3" fill="#e8f5f0" stroke="#0e7c5b" stroke-width="1.2"/>
+      <text x="200" y="161" class="v1s" fill="#0e7c5b" text-anchor="middle">empty</text>
+      <text x="600" y="161" class="v1s" fill="#0e7c5b" text-anchor="middle">stack = []  → return true ✓</text>
+    </svg>
+    <p class="diagram-caption">Fig 1. Valid Parentheses trace on "{[]}". Each opening bracket is pushed; each closing bracket pops and verifies. Empty stack at end = valid.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public boolean</span> <span class="fn">isValid</span>(String s) {
+    Deque&lt;Character&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();
+
+    <span class="kw">for</span> (<span class="kw">char</span> c : s.<span class="fn">toCharArray</span>()) {
+        <span class="kw">if</span> (c == <span class="str">'('</span> || c == <span class="str">'{'</span> || c == <span class="str">'['</span>) {
+            stack.<span class="fn">push</span>(c);                  <span class="cm">// opening: push</span>
+        } <span class="kw">else</span> {
+            <span class="kw">if</span> (stack.<span class="fn">isEmpty</span>()) <span class="kw">return false</span>;
+            <span class="kw">char</span> top = stack.<span class="fn">pop</span>();
+            <span class="kw">if</span> (c == <span class="str">')'</span> && top != <span class="str">'('</span>) <span class="kw">return false</span>;
+            <span class="kw">if</span> (c == <span class="str">'}'</span> && top != <span class="str">'{'</span>) <span class="kw">return false</span>;
+            <span class="kw">if</span> (c == <span class="str">']'</span> && top != <span class="str">'['</span>) <span class="kw">return false</span>;
+        }
+    }
+    <span class="kw">return</span> stack.<span class="fn">isEmpty</span>();  <span class="cm">// valid only if all brackets matched</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(n)</span></pre>
+
+  <!-- Example 2 -->
+  <h2>Example 2 — Daily Temperatures</h2>
+  <p><em>LeetCode #739 · Medium · Monotonic stack</em></p>
+  <p>Given an array of daily temperatures, return an array where <code>answer[i]</code> is the number of days you have to wait after day <code>i</code> to get a warmer temperature. If no warmer day exists, <code>answer[i] = 0</code>.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>temperatures = [73, 74, 75, 71, 69, 72, 76, 73]</code><br>
+    <code>answer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = &nbsp;[ 1,  1,  4,  2,  1,  1,  0,  0]</code></p>
+  </div>
+
+  <p>Maintain a <strong>monotonic decreasing stack of indices</strong>. When a temperature is warmer than the index at the top of the stack, that index has found its answer: <code>current_index − stack_top_index</code>. Pop it, record the gap, and repeat. Each index is pushed once and popped at most once — O(n) total despite the inner loop.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 210" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .d2m { font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:600; }
+          .d2l { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .d2s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+      </defs>
+
+      <!-- temperatures = [73,74,75,71,69,72,76,73] -->
+      <!-- 8 cells: x=10, w=56, gap=2. Centers: 38,96,154,212,270,328,386,444 -->
+      <text x="10" y="14" class="d2s" fill="#6a4a9a" font-weight="600">temperatures</text>
+      <rect x="10"  y="18" width="56" height="28" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="68"  y="18" width="56" height="28" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="126" y="18" width="56" height="28" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="184" y="18" width="56" height="28" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="242" y="18" width="56" height="28" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="300" y="18" width="56" height="28" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="358" y="18" width="56" height="28" rx="3" fill="#5a3a8f" opacity="0.15" stroke="#5a3a8f" stroke-width="1.5"/>
+      <rect x="416" y="18" width="56" height="28" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <text x="38"  y="36" class="d2m" fill="#6a4a9a" text-anchor="middle">73</text>
+      <text x="96"  y="36" class="d2m" fill="#6a4a9a" text-anchor="middle">74</text>
+      <text x="154" y="36" class="d2m" fill="#6a4a9a" text-anchor="middle">75</text>
+      <text x="212" y="36" class="d2m" fill="#6a4a9a" text-anchor="middle">71</text>
+      <text x="270" y="36" class="d2m" fill="#6a4a9a" text-anchor="middle">69</text>
+      <text x="328" y="36" class="d2m" fill="#6a4a9a" text-anchor="middle">72</text>
+      <text x="386" y="36" class="d2m" fill="#6a4a9a" text-anchor="middle">76</text>
+      <text x="444" y="36" class="d2m" fill="#6a4a9a" text-anchor="middle">73</text>
+      <text x="38"  y="54" class="d2s" fill="#9a8ab0" text-anchor="middle">[0]</text>
+      <text x="96"  y="54" class="d2s" fill="#9a8ab0" text-anchor="middle">[1]</text>
+      <text x="154" y="54" class="d2s" fill="#9a8ab0" text-anchor="middle">[2]</text>
+      <text x="212" y="54" class="d2s" fill="#9a8ab0" text-anchor="middle">[3]</text>
+      <text x="270" y="54" class="d2s" fill="#9a8ab0" text-anchor="middle">[4]</text>
+      <text x="328" y="54" class="d2s" fill="#9a8ab0" text-anchor="middle">[5]</text>
+      <text x="386" y="54" class="d2s" fill="#9a8ab0" text-anchor="middle">[6]</text>
+      <text x="444" y="54" class="d2s" fill="#9a8ab0" text-anchor="middle">[7]</text>
+
+      <!-- Trace rows -->
+      <rect x="10" y="64" width="638" height="140" rx="4" fill="#f8f4ff" stroke="#c8b8e0" stroke-width="1"/>
+
+      <text x="20"  y="80"  class="d2s" fill="#6a4a9a" font-weight="600">i=0:</text>
+      <text x="50"  y="80"  class="d2s" fill="#6a4a9a">push 0              stack=[0]</text>
+      <text x="20"  y="96"  class="d2s" fill="#6a4a9a" font-weight="600">i=1:</text>
+      <text x="50"  y="96"  class="d2s" fill="#6a4a9a">74&gt;73 → pop 0, ans[0]=1  push 1      stack=[1]</text>
+      <text x="20"  y="112" class="d2s" fill="#6a4a9a" font-weight="600">i=2:</text>
+      <text x="50"  y="112" class="d2s" fill="#6a4a9a">75&gt;74 → pop 1, ans[1]=1  push 2      stack=[2]</text>
+      <text x="20"  y="128" class="d2s" fill="#6a4a9a" font-weight="600">i=3:</text>
+      <text x="50"  y="128" class="d2s" fill="#6a4a9a">71&lt;75 (stop) → push 3   stack=[2,3]</text>
+      <text x="20"  y="144" class="d2s" fill="#6a4a9a" font-weight="600">i=4:</text>
+      <text x="50"  y="144" class="d2s" fill="#6a4a9a">69&lt;71 (stop) → push 4   stack=[2,3,4]</text>
+      <text x="20"  y="160" class="d2s" fill="#6a4a9a" font-weight="600">i=5:</text>
+      <text x="50"  y="160" class="d2s" fill="#6a4a9a">72&gt;69 → pop 4, ans[4]=1 ; 72&gt;71 → pop 3, ans[3]=2  push 5   stack=[2,5]</text>
+      <text x="20"  y="176" class="d2s" fill="#6a4a9a" font-weight="600">i=6:</text>
+      <text x="50"  y="176" class="d2s" fill="#6a4a9a">76&gt;72 → pop 5, ans[5]=1 ; 76&gt;75 → pop 2, ans[2]=4  push 6   stack=[6]</text>
+      <text x="20"  y="192" class="d2s" fill="#6a4a9a" font-weight="600">i=7:</text>
+      <text x="50"  y="192" class="d2s" fill="#6a4a9a">73&lt;76 (stop) → push 7   stack=[6,7] → ans[6]=ans[7]=0</text>
+    </svg>
+    <p class="diagram-caption">Fig 2. Monotonic decreasing stack trace. Each pop resolves one answer in O(1). i=6 (temp=76) resolves indices 5, 2 in one sweep — total work is O(n), not O(n²).</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span>[] <span class="fn">dailyTemperatures</span>(<span class="kw">int</span>[] temperatures) {
+    <span class="kw">int</span> n = temperatures.length;
+    <span class="kw">int</span>[] answer = <span class="kw">new int</span>[n];
+    Deque&lt;Integer&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();  <span class="cm">// stores indices</span>
+
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="cm">// pop indices whose temperature is beaten by current</span>
+        <span class="kw">while</span> (!stack.<span class="fn">isEmpty</span>() && temperatures[i] &gt; temperatures[stack.<span class="fn">peek</span>()]) {
+            <span class="kw">int</span> idx = stack.<span class="fn">pop</span>();
+            answer[idx] = i - idx;  <span class="cm">// days until warmer</span>
+        }
+        stack.<span class="fn">push</span>(i);
+    }
+    <span class="kw">return</span> answer;  <span class="cm">// unpopped indices remain 0</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(n)</span></pre>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Key Insight</div>
+    <p>The stack stores <strong>indices</strong>, not values. When we pop, we compute <code>current_index − popped_index</code> to get the wait. Each index is pushed once and popped at most once, so the total work across all iterations is O(n) — not O(n²) despite the <code>while</code> loop.</p>
+  </div>
+
+
+  <!-- Example 3 -->
+  <h2>Example 3 — Sliding Window Maximum</h2>
+  <p><em>LeetCode #239 · Hard · Monotonic deque</em></p>
+  <p>Given an integer array and a window size <code>k</code>, return the maximum value in each sliding window as it moves from left to right.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>nums = [1, 3, -1, -3, 5, 3, 6, 7],  k = 3</code><br>
+    → <strong>[3, 3, 5, 5, 6, 7]</strong></p>
+  </div>
+
+  <p>Maintain a <strong>monotonic decreasing deque of indices</strong>. On each step: remove the front if it has slid out of the window, remove the back while the back value is smaller than the incoming element (it can never be a future maximum), then add the current index. Once the first full window is reached, the front of the deque is always the maximum.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 202" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .d3m { font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:600; }
+          .d3s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+      </defs>
+
+      <!-- nums array -->
+      <text x="10" y="14" class="d3s" fill="#6a4a9a" font-weight="600">nums (k=3)</text>
+      <rect x="10"  y="18" width="52" height="26" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="64"  y="18" width="52" height="26" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="118" y="18" width="52" height="26" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="172" y="18" width="52" height="26" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="226" y="18" width="52" height="26" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="280" y="18" width="52" height="26" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="334" y="18" width="52" height="26" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <rect x="388" y="18" width="52" height="26" rx="3" fill="#f2eef8" stroke="#c8b8e0" stroke-width="1"/>
+      <text x="36"  y="35" class="d3m" fill="#6a4a9a" text-anchor="middle">1</text>
+      <text x="90"  y="35" class="d3m" fill="#6a4a9a" text-anchor="middle">3</text>
+      <text x="144" y="35" class="d3m" fill="#6a4a9a" text-anchor="middle">-1</text>
+      <text x="198" y="35" class="d3m" fill="#6a4a9a" text-anchor="middle">-3</text>
+      <text x="252" y="35" class="d3m" fill="#6a4a9a" text-anchor="middle">5</text>
+      <text x="306" y="35" class="d3m" fill="#6a4a9a" text-anchor="middle">3</text>
+      <text x="360" y="35" class="d3m" fill="#6a4a9a" text-anchor="middle">6</text>
+      <text x="414" y="35" class="d3m" fill="#6a4a9a" text-anchor="middle">7</text>
+      <text x="36"  y="52" class="d3s" fill="#9a8ab0" text-anchor="middle">[0]</text>
+      <text x="90"  y="52" class="d3s" fill="#9a8ab0" text-anchor="middle">[1]</text>
+      <text x="144" y="52" class="d3s" fill="#9a8ab0" text-anchor="middle">[2]</text>
+      <text x="198" y="52" class="d3s" fill="#9a8ab0" text-anchor="middle">[3]</text>
+      <text x="252" y="52" class="d3s" fill="#9a8ab0" text-anchor="middle">[4]</text>
+      <text x="306" y="52" class="d3s" fill="#9a8ab0" text-anchor="middle">[5]</text>
+      <text x="360" y="52" class="d3s" fill="#9a8ab0" text-anchor="middle">[6]</text>
+      <text x="414" y="52" class="d3s" fill="#9a8ab0" text-anchor="middle">[7]</text>
+
+      <!-- Trace -->
+      <rect x="10" y="60" width="638" height="136" rx="4" fill="#f8f4ff" stroke="#c8b8e0" stroke-width="1"/>
+      <text x="20"  y="76"  class="d3s" fill="#6a4a9a" font-weight="600">i=0:</text>
+      <text x="48"  y="76"  class="d3s" fill="#6a4a9a">push 0                          deque=[0]       (window not full)</text>
+      <text x="20"  y="92"  class="d3s" fill="#6a4a9a" font-weight="600">i=1:</text>
+      <text x="48"  y="92"  class="d3s" fill="#6a4a9a">3&gt;1 → pop 0, push 1            deque=[1]       (window not full)</text>
+      <text x="20"  y="108" class="d3s" fill="#6a4a9a" font-weight="600">i=2:</text>
+      <text x="48"  y="108" class="d3s" fill="#6a4a9a">-1&lt;3 (stop) → push 2            deque=[1,2]     max = nums[1] = 3</text>
+      <text x="20"  y="124" class="d3s" fill="#6a4a9a" font-weight="600">i=3:</text>
+      <text x="48"  y="124" class="d3s" fill="#6a4a9a">-3&lt;-1 (stop) → push 3           deque=[1,2,3]   max = nums[1] = 3</text>
+      <text x="20"  y="140" class="d3s" fill="#6a4a9a" font-weight="600">i=4:</text>
+      <text x="48"  y="140" class="d3s" fill="#6a4a9a">5&gt;-3,-1,3 → pop 3,2,1; push 4  deque=[4]       max = nums[4] = 5</text>
+      <text x="20"  y="156" class="d3s" fill="#6a4a9a" font-weight="600">i=5:</text>
+      <text x="48"  y="156" class="d3s" fill="#6a4a9a">3&lt;5 (stop) → push 5             deque=[4,5]     max = nums[4] = 5</text>
+      <text x="20"  y="172" class="d3s" fill="#6a4a9a" font-weight="600">i=6:</text>
+      <text x="48"  y="172" class="d3s" fill="#6a4a9a">6&gt;3,5 → pop 5,4; push 6        deque=[6]       max = nums[6] = 6</text>
+      <text x="20"  y="188" class="d3s" fill="#6a4a9a" font-weight="600">i=7:</text>
+      <text x="48"  y="188" class="d3s" fill="#6a4a9a">7&gt;6 → pop 6; push 7            deque=[7]       max = nums[7] = 7</text>
+    </svg>
+    <p class="diagram-caption">Fig 3. Monotonic deque trace (k=3). Highlighted values (3, 5, 6, 7) are the window maxima. The deque front always holds the index of the current maximum.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span>[] <span class="fn">maxSlidingWindow</span>(<span class="kw">int</span>[] nums, <span class="kw">int</span> k) {
+    <span class="kw">int</span> n = nums.length;
+    <span class="kw">int</span>[] result = <span class="kw">new int</span>[n - k + <span class="num">1</span>];
+    Deque&lt;Integer&gt; deque = <span class="kw">new</span> ArrayDeque&lt;&gt;();  <span class="cm">// stores indices</span>
+
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="cm">// remove front if outside window</span>
+        <span class="kw">if</span> (!deque.<span class="fn">isEmpty</span>() && deque.<span class="fn">peekFirst</span>() &lt;= i - k) {
+            deque.<span class="fn">pollFirst</span>();
+        }
+        <span class="cm">// remove back while smaller than current (can never be max)</span>
+        <span class="kw">while</span> (!deque.<span class="fn">isEmpty</span>() && nums[deque.<span class="fn">peekLast</span>()] &lt;= nums[i]) {
+            deque.<span class="fn">pollLast</span>();
+        }
+        deque.<span class="fn">offerLast</span>(i);
+
+        <span class="kw">if</span> (i >= k - <span class="num">1</span>) {
+            result[i - k + <span class="num">1</span>] = nums[deque.<span class="fn">peekFirst</span>()];  <span class="cm">// front = max</span>
+        }
+    }
+    <span class="kw">return</span> result;
+}
+<span class="cm">// Time: O(n)  |  Space: O(k)</span></pre>
+
+  <div class="callout callout-note">
+    <div class="callout-label">Two Conditions, Two Ends</div>
+    <p>The deque does two different things at two different ends: <strong>front</strong> — evict indices that have slid out of the window (size check); <strong>back</strong> — evict indices whose values are smaller than the incoming element (they can never become a maximum while this element is in the window). Keeping these two operations distinct is the key to implementing this cleanly.</p>
+  </div>
+
+  <!-- Template -->
+  <h2>Universal Template</h2>
+  <p>The three canonical stack and deque skeletons:</p>
+
+<pre><span class="lang">Java 8 — Pattern 1: Stack Matching</span>Deque&lt;Character&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();
+<span class="kw">for</span> (<span class="kw">char</span> c : s.<span class="fn">toCharArray</span>()) {
+    <span class="kw">if</span> (<span class="fn">isOpening</span>(c)) {
+        stack.<span class="fn">push</span>(c);
+    } <span class="kw">else</span> {
+        <span class="kw">if</span> (stack.<span class="fn">isEmpty</span>() || !<span class="fn">matches</span>(stack.<span class="fn">pop</span>(), c)) <span class="kw">return false</span>;
+    }
+}
+<span class="kw">return</span> stack.<span class="fn">isEmpty</span>();</pre>
+
+<pre><span class="lang">Java 8 — Pattern 2: Monotonic Stack</span>Deque&lt;Integer&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();  <span class="cm">// stores indices</span>
+<span class="kw">int</span>[] result = <span class="kw">new int</span>[n];
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+    <span class="kw">while</span> (!stack.<span class="fn">isEmpty</span>() && arr[i] &gt; arr[stack.<span class="fn">peek</span>()]) {
+        <span class="kw">int</span> idx = stack.<span class="fn">pop</span>();
+        result[idx] = i - idx;  <span class="cm">// or arr[i], depending on problem</span>
+    }
+    stack.<span class="fn">push</span>(i);
+}
+<span class="cm">// For next SMALLER: change > to <</span>
+<span class="cm">// For previous greater: iterate right to left</span></pre>
+
+<pre><span class="lang">Java 8 — Pattern 3: Monotonic Deque (Sliding Window Max)</span>Deque&lt;Integer&gt; deque = <span class="kw">new</span> ArrayDeque&lt;&gt;();  <span class="cm">// stores indices</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+    <span class="cm">// evict front if outside window</span>
+    <span class="kw">if</span> (!deque.<span class="fn">isEmpty</span>() && deque.<span class="fn">peekFirst</span>() &lt;= i - k) deque.<span class="fn">pollFirst</span>();
+    <span class="cm">// maintain decreasing order from back</span>
+    <span class="kw">while</span> (!deque.<span class="fn">isEmpty</span>() && nums[deque.<span class="fn">peekLast</span>()] &lt;= nums[i]) deque.<span class="fn">pollLast</span>();
+    deque.<span class="fn">offerLast</span>(i);
+    <span class="cm">// front is always the window maximum</span>
+    <span class="kw">if</span> (i >= k - <span class="num">1</span>) result[i - k + <span class="num">1</span>] = nums[deque.<span class="fn">peekFirst</span>()];
+}</pre>
+
+
+  <!-- Complexity -->
+  <h2>Complexity Summary</h2>
+  <table class="data-table">
+    <thead><tr><th>Pattern</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Stack matching</td><td><span class="badge b-green">O(n)</span></td><td><span class="badge b-yellow">O(n)</span></td><td>Each element pushed/popped at most once</td></tr>
+      <tr><td>Monotonic stack</td><td><span class="badge b-green">O(n)</span></td><td><span class="badge b-yellow">O(n)</span></td><td>Amortized O(1) per element despite while loop</td></tr>
+      <tr><td>Deque sliding window max</td><td><span class="badge b-green">O(n)</span></td><td><span class="badge b-yellow">O(k)</span></td><td>k = window size; each index added/removed once</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  <h2>When to Reach for Stack / Queue Patterns</h2>
+  <ul class="signal-list">
+    <li><strong>"Valid"</strong> or <strong>"balanced"</strong> structure with nested brackets or tags — stack matching</li>
+    <li><strong>"Next greater element"</strong>, <strong>"next smaller element"</strong>, <strong>"days until warmer"</strong> — monotonic stack</li>
+    <li><strong>"Previous greater element"</strong> — same monotonic stack, iterate right to left</li>
+    <li><strong>"Maximum in sliding window of size k"</strong> — monotonic deque</li>
+    <li>Iterative tree or graph traversal replacing recursion — explicit stack</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Practice Ladder</h2>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Problem</th><th>Difficulty</th><th>Key Insight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Valid Parentheses (LC 20)</td><td><span class="badge b-green">Easy</span></td><td>Stack matching — covered above</td></tr>
+      <tr><td>2</td><td>Min Stack (LC 155)</td><td><span class="badge b-yellow">Medium</span></td><td>Auxiliary stack tracking running minimum</td></tr>
+      <tr><td>3</td><td>Evaluate Reverse Polish Notation (LC 150)</td><td><span class="badge b-yellow">Medium</span></td><td>Push operands, pop two on operator</td></tr>
+      <tr><td>4</td><td>Daily Temperatures (LC 739)</td><td><span class="badge b-yellow">Medium</span></td><td>Monotonic decreasing stack — covered above</td></tr>
+      <tr><td>5</td><td>Sliding Window Maximum (LC 239)</td><td><span class="badge b-red">Hard</span></td><td>Monotonic deque — covered above</td></tr>
+      <tr><td>6</td><td>Car Fleet (LC 853)</td><td><span class="badge b-yellow">Medium</span></td><td>Sort by position, monotonic stack on arrival times</td></tr>
+      <tr><td>7</td><td>Largest Rectangle in Histogram (LC 84)</td><td><span class="badge b-red">Hard</span></td><td>Monotonic increasing stack tracks left boundary</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Learning Path</div>
+    <p>LC 84 (Largest Rectangle in Histogram) is the most challenging problem in this set. It uses a monotonic increasing stack to track the left boundary of each bar and computes areas when taller bars are encountered. If you can derive it without hints, the monotonic stack pattern is truly internalized. Try it before moving to Post #9.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <h3>Up Next — Post #9: Linked Lists</h3>
+  <p>Post #9 covers linked list patterns — dummy nodes, in-place reversal, and the fast/slow pointer technique. Pointer manipulation on linked lists is the direct precursor to the node-based thinking that trees require in Post #10.</p>
+
+  <p style="color:var(--ink-faint); font-size:13px; margin-top:44px; font-style:italic;">
+    Interview Prep Series · Post #8 of 20
+  </p>
+
+</div>
+</main>
+
+<footer class="post-footer">
+  <strong>Interview Prep Series</strong> — Arrays & Hashing · Two Pointers · Sliding Window · Prefix Sum · Binary Search · Sorting · Intervals · Stacks & Queues · and 12 more.
+  <p class="next-label">Next: Linked Lists →</p>
+</footer>
+
+</body>
+</html>
