@@ -13,10 +13,10 @@ to advanced engineers preparing for technical interviews.
 | 03 | Sliding Window | ✅ Live |
 | 04 | Prefix Sum | ✅ Live |
 | 05 | Binary Search | ✅ Live |
-| 06 | Sorting Strategies | 🔜 Coming soon |
-| 07 | Linked Lists | 🔜 Coming soon |
-| 08 | Intervals | 🔜 Coming soon |
-| 09 | Stacks & Queues | 🔜 Coming soon |
+| 06 | Sorting Strategies | ✅ Live |
+| 07 | Intervals | ✅ Live |
+| 08 | Stacks & Queues | ✅ Live |
+| 09 | Linked Lists | ✅ Live |
 | 10 | Trees & DFS + BST | 🔜 Coming soon |
 | 11 | Trees & BFS | 🔜 Coming soon |
 | 12 | Tries | 🔜 Coming soon |
