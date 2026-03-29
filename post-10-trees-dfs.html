@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trees & DFS — Interview Prep Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:        #051a0c;
+      --ink-soft:   #0d2818;
+      --ink-faint:  #2a7a4a;
+      --paper:      #f2faf5;
+      --paper-warm: #eaf5ee;
+      --accent:     #1a6b3c;
+      --accent-alt: #1a3f7a;
+      --orange:     #b5460f;
+      --green:      #0e7c5b;
+      --highlight:  #3aaa6a;
+      --code-bg:    #010a04;
+      --code-fg:    #88d4a8;
+      --border:     #a8d0b8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--paper); color: var(--ink); font-family: 'Source Sans 3', sans-serif; font-size: 17px; line-height: 1.8; }
+
+    .hero { background: var(--ink); color: var(--paper); padding: 72px 24px 56px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 110%, #1a6b3c22, transparent); }
+    .hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--highlight), #6ad090); }
+    .hero-eyebrow { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--highlight); margin-bottom: 24px; }
+    .hero h1 { font-family: 'Lora', serif; font-size: clamp(2rem, 5.5vw, 3.4rem); font-weight: 700; line-height: 1.15; max-width: 680px; margin: 0 auto 16px; }
+    .hero-sub { color: #2a8a4a; font-size: 15px; font-weight: 300; max-width: 580px; margin: 0 auto 36px; }
+    .hero-meta { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; font-size: 12px; color: #2a8a4a; letter-spacing: 0.04em; }
+
+    .container { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+    .post-body { padding: 60px 24px 96px; }
+
+    h2 { font-family: 'Lora', serif; font-size: 1.75rem; font-weight: 700; color: var(--ink); margin: 52px 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+    h3 { font-family: 'Source Sans 3', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--accent-alt); margin: 32px 0 8px; letter-spacing: 0.06em; text-transform: uppercase; }
+    p { margin-bottom: 16px; color: var(--ink-soft); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    .callout { border-left: 3px solid var(--accent); background: var(--paper-warm); padding: 16px 20px; margin: 24px 0; border-radius: 0 5px 5px 0; }
+    .callout-tip  { border-left-color: var(--green); }
+    .callout-warn { border-left-color: var(--orange); }
+    .callout-note { border-left-color: var(--accent-alt); }
+    .callout-label { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+    .callout-tip  .callout-label { color: var(--green); }
+    .callout-warn .callout-label { color: var(--orange); }
+    .callout-note .callout-label { color: var(--accent-alt); }
+    .callout p { margin: 0; font-size: 15px; }
+
+    pre { background: var(--code-bg); color: var(--code-fg); font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; padding: 26px 28px; border-radius: 6px; overflow-x: auto; margin: 20px 0 28px; position: relative; }
+    pre .lang { position: absolute; top: 10px; right: 14px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #021a08; }
+    .kw  { color: #3aaa6a; }
+    .fn  { color: #5ac882; }
+    .cm  { color: #4a9a68; font-style: italic; }
+    .tp  { color: #88d4a8; }
+    .num { color: #f0c878; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.83em; background: var(--paper-warm); border: 1px solid var(--border); padding: 2px 5px; border-radius: 3px; color: var(--orange); }
+
+    .diagram-wrap { margin: 32px 0; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 28px 16px 20px; text-align: center; box-shadow: 0 1px 12px rgba(0,0,0,0.04); }
+    .diagram-caption { font-size: 12.5px; color: var(--ink-faint); margin-top: 14px; font-style: italic; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .data-table th { background: var(--ink); color: var(--paper); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); font-weight: 300; }
+    .data-table tr:nth-child(even) td { background: var(--paper-warm); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+    .b-green  { background: #d4f0e4; color: #0a6e46; }
+    .b-yellow { background: #fdf0c8; color: #8a6000; }
+    .b-red    { background: #fde4e4; color: #a01010; }
+
+    ul.signal-list { margin: 0 0 18px 24px; color: var(--ink-soft); font-weight: 300; line-height: 2; }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    .post-footer { background: var(--ink); color: #2a8a4a; text-align: center; padding: 44px 24px; font-size: 13px; }
+    .post-footer strong { color: #3aaa6a; }
+    .next-label { margin-top: 10px; color: var(--highlight); font-style: italic; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">Interview Prep Series · Post #10 of 20</div>
+  <h1>Trees & DFS</h1>
+  <p class="hero-sub">Every tree problem is a recursion problem. The recursive structure of a binary tree maps directly onto recursive thinking — master DFS traversal order and the BST invariant and most tree problems become pattern-matching.</p>
+  <div class="hero-meta">
+    <span>⏱ 6 min read</span>
+    <span>🌲 Trees</span>
+    <span>🔑 Java 8</span>
+    <span>📈 Intermediate → Advanced</span>
+  </div>
+</header>
+
+<main class="post-body">
+<div class="container">
+
+  <p>A binary tree is a linked list where each node has <strong>two</strong> pointers instead of one — <code>left</code> and <code>right</code> instead of <code>next</code>. The pointer manipulation skills from Post #9 transfer directly. The difference is that traversal now branches, and <strong>the call stack handles the branching for you</strong> when you write recursive solutions. Understanding why recursion works on trees — and what base case to return — is the central skill this post develops.</p>
+
+  <div class="callout callout-note">
+    <div class="callout-label">Prerequisites</div>
+    <p>Post #9 (Linked Lists) — node-based pointer thinking. A <code>TreeNode</code> is structurally a <code>ListNode</code> with two next pointers.</p>
+  </div>
+
+  <!-- Three DFS Traversals -->
+  <h2>Three DFS Traversals</h2>
+  <p>Depth-first search visits every node by going deep before going wide. The three DFS traversals differ only in <strong>when the current node is processed</strong> relative to its children.</p>
+
+  <div class="diagram-wrap">
+    <svg     <svg viewBox="0 0 660 238" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .tm { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+          .tl { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .ts { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="te" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#a8d0b8"/>
+        </marker>
+      </defs>
+
+      <!-- Tree: root=1(330,36), L=2(220,90), R=3(440,90), LL=4(160,144), LR=5(280,144) -->
+      <circle cx="330" cy="36"  r="22" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.8"/>
+      <circle cx="220" cy="90"  r="22" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.8"/>
+      <circle cx="440" cy="90"  r="22" fill="#1a6b3c" opacity="0.15" stroke="#1a6b3c" stroke-width="1.8"/>
+      <circle cx="160" cy="144" r="22" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="280" cy="144" r="22" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+
+      <text x="330" y="41"  class="tm" fill="#1a6b3c" text-anchor="middle">1</text>
+      <text x="220" y="95"  class="tm" fill="#1a6b3c" text-anchor="middle">2</text>
+      <text x="440" y="95"  class="tm" fill="#1a6b3c" text-anchor="middle">3</text>
+      <text x="160" y="149" class="tm" fill="#2a7a4a" text-anchor="middle">4</text>
+      <text x="280" y="149" class="tm" fill="#2a7a4a" text-anchor="middle">5</text>
+
+      <!-- Edges -->
+      <line x1="313" y1="53"  x2="237" y2="73"  stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#te)"/>
+      <line x1="347" y1="53"  x2="423" y2="73"  stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#te)"/>
+      <line x1="206" y1="107" x2="176" y2="127" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#te)"/>
+      <line x1="234" y1="107" x2="264" y2="127" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#te)"/>
+
+      <!-- Traversal results box below tree — y=174 -->
+      <rect x="14" y="172" width="630" height="62" rx="4" fill="#f2faf5" stroke="#a8d0b8" stroke-width="1"/>
+      <text x="24" y="189" class="ts" fill="#1a6b3c" font-weight="600">Preorder  (root, left, right):</text>
+      <text x="218" y="189" class="tm" fill="#1a6b3c">1  2  4  5  3</text>
+      <text x="24" y="207" class="ts" fill="#2a7a4a" font-weight="600">Inorder   (left, root, right):</text>
+      <text x="218" y="207" class="tm" fill="#2a7a4a">4  2  5  1  3</text>
+
+      <text x="24" y="224" class="ts" fill="#0e7c5b" font-weight="600">Postorder (left, right, root):</text>
+      <text x="218" y="224" class="tm" fill="#0e7c5b">4  5  2  3  1</text>
+    </svg>
+    <p class="diagram-caption">Fig 1. Three DFS traversals on the same tree. The only difference is when the current node is processed relative to its children.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="cm">// All three DFS traversals — only the processing order changes</span>
+<span class="kw">void</span> <span class="fn">preorder</span>(TreeNode node) {
+    <span class="kw">if</span> (node == <span class="kw">null</span>) <span class="kw">return</span>;
+    <span class="fn">process</span>(node);            <span class="cm">// root first</span>
+    <span class="fn">preorder</span>(node.left);
+    <span class="fn">preorder</span>(node.right);
+}
+
+<span class="kw">void</span> <span class="fn">inorder</span>(TreeNode node) {
+    <span class="kw">if</span> (node == <span class="kw">null</span>) <span class="kw">return</span>;
+    <span class="fn">inorder</span>(node.left);
+    <span class="fn">process</span>(node);            <span class="cm">// root between children</span>
+    <span class="fn">inorder</span>(node.right);
+}
+
+<span class="kw">void</span> <span class="fn">postorder</span>(TreeNode node) {
+    <span class="kw">if</span> (node == <span class="kw">null</span>) <span class="kw">return</span>;
+    <span class="fn">postorder</span>(node.left);
+    <span class="fn">postorder</span>(node.right);
+    <span class="fn">process</span>(node);            <span class="cm">// root last</span>
+}</pre>
+
+
+  <!-- BST Invariant -->
+  <h2>The BST Invariant</h2>
+  <p>A binary search tree is a binary tree with one additional constraint: for every node, <strong>all values in its left subtree are strictly less than the node's value, and all values in its right subtree are strictly greater</strong>. This invariant holds recursively at every node — not just between a parent and its immediate children.</p>
+
+  <p>The invariant buys two things. First, <strong>BST inorder traversal always produces a sorted sequence</strong> — which is why inorder is the natural traversal for BST problems. Second, <strong>search can prune one branch at every node</strong> — rather than visiting all n nodes, you follow the invariant left or right, reducing search to O(h) instead of O(n).</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 272" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .bm { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+          .bl { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .bs { font-family:'Source Sans 3',sans-serif; font-size:10.5px; }
+        </style>
+        <marker id="ba" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#a8d0b8"/>
+        </marker>
+      </defs>
+
+      <!-- Nodes: 8(330,36) 3(190,100) 10(470,100) 1(120,164) 6(260,164) 14(540,164) 13(506,228) -->
+
+      <!-- Level 1 -->
+      <circle cx="330" cy="36"  r="22" fill="#1a6b3c" opacity="0.2" stroke="#1a6b3c" stroke-width="2"/>
+      <text x="330" y="42"  class="bm" fill="#1a6b3c" text-anchor="middle">8</text>
+
+      <!-- Level 2 -->
+      <circle cx="190" cy="100" r="22" fill="#1a6b3c" opacity="0.12" stroke="#1a6b3c" stroke-width="1.5"/>
+      <circle cx="470" cy="100" r="22" fill="#1a6b3c" opacity="0.12" stroke="#1a6b3c" stroke-width="1.5"/>
+      <text x="190" y="106" class="bm" fill="#1a6b3c" text-anchor="middle">3</text>
+      <text x="470" y="106" class="bm" fill="#1a6b3c" text-anchor="middle">10</text>
+
+      <!-- Level 3 -->
+      <circle cx="120" cy="164" r="22" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="260" cy="164" r="22" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="540" cy="164" r="22" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <text x="120" y="170" class="bm" fill="#2a7a4a" text-anchor="middle">1</text>
+      <text x="260" y="170" class="bm" fill="#2a7a4a" text-anchor="middle">6</text>
+      <text x="540" y="170" class="bm" fill="#2a7a4a" text-anchor="middle">14</text>
+
+      <!-- Level 4 -->
+      <circle cx="506" cy="228" r="22" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <text x="506" y="234" class="bm" fill="#2a7a4a" text-anchor="middle">13</text>
+
+      <!-- Edges -->
+      <line x1="312" y1="53"  x2="208" y2="83"  stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#ba)"/>
+      <line x1="348" y1="53"  x2="452" y2="83"  stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#ba)"/>
+      <line x1="175" y1="117" x2="138" y2="147" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#ba)"/>
+      <line x1="205" y1="117" x2="242" y2="147" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#ba)"/>
+      <line x1="483" y1="117" x2="527" y2="147" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#ba)"/>
+      <line x1="524" y1="181" x2="520" y2="209" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#ba)"/>
+
+      <!-- Left / Right zone labels -->
+      <text x="190" y="22"  class="bl" fill="#1a6b3c" text-anchor="middle" font-style="italic">all left &lt; 8</text>
+      <text x="470" y="22"  class="bl" fill="#1a6b3c" text-anchor="middle" font-style="italic">all right &gt; 8</text>
+      <line x1="330" y1="14" x2="196" y2="14" stroke="#1a6b3c" stroke-width="1" stroke-dasharray="3" opacity="0.5"/>
+      <line x1="330" y1="14" x2="464" y2="14" stroke="#1a6b3c" stroke-width="1" stroke-dasharray="3" opacity="0.5"/>
+
+      <!-- Bounds below each node -->
+      <text x="330" y="70"  class="bs" fill="#2a7a4a" text-anchor="middle">(-∞, +∞)</text>
+      <text x="190" y="132" class="bs" fill="#2a7a4a" text-anchor="middle">(-∞, 8)</text>
+      <text x="470" y="132" class="bs" fill="#2a7a4a" text-anchor="middle">(8, +∞)</text>
+      <text x="120" y="194" class="bs" fill="#4a8a6a" text-anchor="middle">(-∞, 3)</text>
+      <text x="260" y="194" class="bs" fill="#4a8a6a" text-anchor="middle">(3, 8)</text>
+      <text x="540" y="194" class="bs" fill="#4a8a6a" text-anchor="middle">(10, +∞)</text>
+      <text x="506" y="258" class="bs" fill="#4a8a6a" text-anchor="middle">(10, 14)</text>
+
+      <!-- Inorder annotation -->
+      <rect x="14" y="262" width="630" height="8" rx="0" fill="none"/>
+      <text x="330" y="270" class="bs" fill="#1a6b3c" text-anchor="middle">Inorder traversal → 1  3  6  8  10  13  14  (sorted ✓)</text>
+    </svg>
+    <p class="diagram-caption">Fig 2. BST invariant: each node inherits bounds from its ancestors. Every node in the left subtree of 8 is less than 8; every node in the right subtree is greater — recursively at every level. Inorder traversal always yields a sorted sequence.</p>
+  </div>
+
+  <!-- Example 1 -->
+  <h2>Example 1 — Maximum Depth of Binary Tree</h2>
+  <p><em>LeetCode #104 · Easy · Postorder DFS</em></p>
+  <p>Given the root of a binary tree, return its maximum depth — the number of nodes along the longest path from root to a leaf node.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p><code>root = [3,9,20,null,null,15,7]</code> → <strong>3</strong></p>
+  </div>
+
+  <p>The maximum depth of a tree rooted at any node is <strong>1 + the maximum depth of its deeper subtree</strong>. This is a postorder pattern: compute the answer for both children first, then combine at the parent. The base case is a null node, which has depth 0.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 500 196" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:500px">
+      <defs>
+        <style>
+          .e1m { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+          .e1s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="e1a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#a8d0b8"/>
+        </marker>
+        <marker id="e1h" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#1a6b3c"/>
+        </marker>
+      </defs>
+
+      <!-- Nodes: 3(200,36), 9(100,96), 20(300,96), 15(240,156), 7(360,156) -->
+      <!-- Highlight path 3→20→7 in deeper green -->
+      <circle cx="200" cy="36"  r="22" fill="#1a6b3c" opacity="0.2" stroke="#1a6b3c" stroke-width="1.8"/>
+      <circle cx="100" cy="96"  r="22" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="300" cy="96"  r="22" fill="#1a6b3c" opacity="0.2" stroke="#1a6b3c" stroke-width="1.8"/>
+      <circle cx="240" cy="156" r="22" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="360" cy="156" r="22" fill="#1a6b3c" opacity="0.2" stroke="#1a6b3c" stroke-width="1.8"/>
+
+      <text x="200" y="41"  class="e1m" fill="#1a6b3c" text-anchor="middle">3</text>
+      <text x="100" y="101" class="e1m" fill="#2a7a4a" text-anchor="middle">9</text>
+      <text x="300" y="101" class="e1m" fill="#1a6b3c" text-anchor="middle">20</text>
+      <text x="240" y="161" class="e1m" fill="#2a7a4a" text-anchor="middle">15</text>
+      <text x="360" y="161" class="e1m" fill="#1a6b3c" text-anchor="middle">7</text>
+
+      <!-- Edges: 3→9 grey, 3→20 green (highlight), 20→15 grey, 20→7 green -->
+      <line x1="184" y1="53" x2="117" y2="79" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e1a)"/>
+      <line x1="216" y1="53" x2="283" y2="79" stroke="#1a6b3c" stroke-width="2"   marker-end="url(#e1h)"/>
+      <line x1="287" y1="113" x2="257" y2="137" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e1a)"/>
+      <line x1="313" y1="113" x2="343" y2="137" stroke="#1a6b3c" stroke-width="2"   marker-end="url(#e1h)"/>
+
+      <!-- Depth labels on right -->
+      <text x="450" y="40"  class="e1s" fill="#2a7a4a" text-anchor="middle">depth 1</text>
+      <text x="450" y="100" class="e1s" fill="#2a7a4a" text-anchor="middle">depth 2</text>
+      <text x="450" y="160" class="e1s" fill="#1a6b3c" font-weight="600" text-anchor="middle">depth 3</text>
+      <line x1="424" y1="36"  x2="415" y2="36"  stroke="#c8e0d0" stroke-width="1" stroke-dasharray="3"/>
+      <line x1="424" y1="96"  x2="415" y2="96"  stroke="#c8e0d0" stroke-width="1" stroke-dasharray="3"/>
+      <line x1="424" y1="156" x2="415" y2="156" stroke="#1a6b3c" stroke-width="1" stroke-dasharray="3" opacity="0.6"/>
+
+      <!-- depth bracket lines -->
+      <line x1="408" y1="20" x2="408" y2="176" stroke="#c8e0d0" stroke-width="1"/>
+
+      <!-- Result label -->
+      <text x="200" y="186" class="e1s" fill="#1a6b3c" text-anchor="middle" font-weight="600">max depth = 3  (path 3 → 20 → 7)</text>
+    </svg>
+    <p class="diagram-caption">Fig 3. Tree structure for Max Depth. The highlighted path shows the maximum-depth route. <code>maxDepth</code> returns 1 + max(left, right) at every node — at node 3: 1 + max(1, 2) = 3.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public int</span> <span class="fn">maxDepth</span>(TreeNode root) {
+    <span class="kw">if</span> (root == <span class="kw">null</span>) <span class="kw">return</span> <span class="num">0</span>;       <span class="cm">// base case: null node has depth 0</span>
+
+    <span class="kw">int</span> left  = <span class="fn">maxDepth</span>(root.left);   <span class="cm">// depth of left subtree</span>
+    <span class="kw">int</span> right = <span class="fn">maxDepth</span>(root.right);  <span class="cm">// depth of right subtree</span>
+
+    <span class="kw">return</span> <span class="num">1</span> + Math.<span class="fn">max</span>(left, right);  <span class="cm">// current node adds 1</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(h)  where h = tree height</span></pre>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">The Recursive Leap</div>
+    <p>Trust the recursion. <code>maxDepth(root.left)</code> correctly returns the depth of the entire left subtree — you don't need to think about how. Your only job is: <em>what does this function return for the current node, given correct answers from its children?</em> That question has a one-line answer: <code>1 + max(left, right)</code>.</p>
+  </div>
+
+  <!-- Example 2 -->
+  <h2>Example 2 — Lowest Common Ancestor</h2>
+  <p><em>LeetCode #236 · Medium · Postorder DFS</em></p>
+  <p>Given a binary tree and two nodes <code>p</code> and <code>q</code>, find their lowest common ancestor — the deepest node that has both <code>p</code> and <code>q</code> as descendants (a node can be a descendant of itself).</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p>Tree: <code>[3,5,1,6,2,0,8,null,null,7,4]</code><br>
+    <code>p=5, q=4</code> → <strong>5</strong> (5 is an ancestor of 4)<br>
+    <code>p=5, q=1</code> → <strong>3</strong> (3 is the first node with both in different subtrees)</p>
+  </div>
+
+  <p>The key insight: if <code>p</code> is found in the left subtree and <code>q</code> in the right (or vice versa), the current node is the LCA. If both are in the same subtree, the answer is deeper. Postorder DFS propagates found nodes upward naturally.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 186" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .lm { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .ls { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="la" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#a8d0b8"/>
+        </marker>
+      </defs>
+
+      <!-- Tree for LCA example: 3 at root, 5 left, 1 right, 6,2 under 5, 0,8 under 1, 7,4 under 2 -->
+      <!-- Positions: 3=(330,28), 5=(200,80), 1=(460,80), 6=(130,132), 2=(270,132), 0=(400,132), 8=(520,132) -->
+      <!-- p=5 highlighted green, q=4 highlighted blue, LCA=3 highlighted accent -->
+
+      <!-- Nodes -->
+      <circle cx="330" cy="28"  r="20" fill="#1a6b3c" opacity="0.2" stroke="#1a6b3c" stroke-width="2"/>
+      <circle cx="200" cy="80"  r="20" fill="#1a6b3c" opacity="0.35" stroke="#1a6b3c" stroke-width="2.5"/>
+      <circle cx="460" cy="80"  r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="130" cy="132" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="270" cy="132" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="400" cy="132" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="520" cy="132" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+
+      <text x="330" y="33"  class="lm" fill="#1a6b3c" text-anchor="middle">3</text>
+      <text x="200" y="85"  class="lm" fill="#1a6b3c" text-anchor="middle">5</text>
+      <text x="460" y="85"  class="lm" fill="#2a7a4a" text-anchor="middle">1</text>
+      <text x="130" y="137" class="lm" fill="#2a7a4a" text-anchor="middle">6</text>
+      <text x="270" y="137" class="lm" fill="#2a7a4a" text-anchor="middle">2</text>
+      <text x="400" y="137" class="lm" fill="#2a7a4a" text-anchor="middle">0</text>
+      <text x="520" y="137" class="lm" fill="#2a7a4a" text-anchor="middle">8</text>
+
+      <!-- Edges -->
+      <line x1="315" y1="44" x2="218" y2="63" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#la)"/>
+      <line x1="345" y1="44" x2="443" y2="63" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#la)"/>
+      <line x1="186" y1="97" x2="148" y2="115" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#la)"/>
+      <line x1="214" y1="97" x2="253" y2="115" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#la)"/>
+      <line x1="447" y1="97" x2="418" y2="115" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#la)"/>
+      <line x1="473" y1="97" x2="503" y2="115" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#la)"/>
+
+      <!-- Legend -->
+      <text x="10" y="20"  class="ls" fill="#1a6b3c" font-weight="600">p=5 (darker green) · LCA=3 (lighter green)</text>
+      <text x="10" y="164" class="ls" fill="#2a7a4a">p=5, q=1 → both targets in different subtrees of 3 → LCA = 3</text>
+      <text x="10" y="178" class="ls" fill="#2a7a4a">p=5, q=2 → q is a descendant of p → LCA = 5</text>
+    </svg>
+    <p class="diagram-caption">Fig 4. LCA on the example tree. When targets split across left and right subtrees, the split point is the answer. When one target is an ancestor of the other, the ancestor is the answer.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public</span> TreeNode <span class="fn">lowestCommonAncestor</span>(TreeNode root, TreeNode p, TreeNode q) {
+    <span class="kw">if</span> (root == <span class="kw">null</span>) <span class="kw">return null</span>;           <span class="cm">// not found in this subtree</span>
+    <span class="kw">if</span> (root == p || root == q) <span class="kw">return</span> root;  <span class="cm">// found one target</span>
+
+    TreeNode left  = <span class="fn">lowestCommonAncestor</span>(root.left,  p, q);
+    TreeNode right = <span class="fn">lowestCommonAncestor</span>(root.right, p, q);
+
+    <span class="kw">if</span> (left != <span class="kw">null</span> && right != <span class="kw">null</span>) <span class="kw">return</span> root;  <span class="cm">// split: root is LCA</span>
+    <span class="kw">return</span> left != <span class="kw">null</span> ? left : right;   <span class="cm">// propagate the found node upward</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(h)</span></pre>
+
+  <!-- Example 3 -->
+  <h2>Example 3 — Validate Binary Search Tree</h2>
+  <p><em>LeetCode #98 · Medium · BST invariant + DFS</em></p>
+  <p>Given the root of a binary tree, determine whether it is a valid BST. A valid BST requires that every node in the left subtree is <strong>strictly less than</strong> the current node, and every node in the right subtree is <strong>strictly greater</strong> — not just the immediate children.</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">Common Mistake</div>
+    <p>Checking only immediate children (<code>left.val &lt; root.val</code>) is wrong. A node deep in the right subtree might still violate the root's constraint. The correct approach passes valid bounds down the tree at every recursive call.</p>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg     <svg     <svg viewBox="0 0 660 250" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .e3m { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
+          .e3s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="e3a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#a8d0b8"/>
+        </marker>
+        <marker id="e3r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#b5460f"/>
+        </marker>
+      </defs>
+
+      <!-- Level spacing: L1 cy=60, L2 cy=132, L3 cy=204. Stride=72px, gap between levels=32px -->
+
+      <!-- ── Valid BST ── -->
+      <text x="150" y="14" class="e3s" fill="#1a6b3c" text-anchor="middle" font-weight="600">✓ Valid BST</text>
+
+      <circle cx="150" cy="60"  r="20" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.8"/>
+      <circle cx="80"  cy="132" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="220" cy="132" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="46"  cy="204" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="114" cy="204" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+
+      <text x="150" y="65"  class="e3m" fill="#1a6b3c" text-anchor="middle">5</text>
+      <text x="80"  y="137" class="e3m" fill="#2a7a4a" text-anchor="middle">3</text>
+      <text x="220" y="137" class="e3m" fill="#2a7a4a" text-anchor="middle">7</text>
+      <text x="46"  y="209" class="e3m" fill="#2a7a4a" text-anchor="middle">1</text>
+      <text x="114" y="209" class="e3m" fill="#2a7a4a" text-anchor="middle">4</text>
+
+      <line x1="136" y1="77"  x2="94"  y2="115" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e3a)"/>
+      <line x1="164" y1="77"  x2="206" y2="115" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e3a)"/>
+      <line x1="68"  y1="149" x2="58"  y2="187" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e3a)"/>
+      <line x1="92"  y1="149" x2="102" y2="187" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e3a)"/>
+
+      <!-- Bound annotations — well clear of all nodes -->
+      <text x="46"  y="240" class="e3s" fill="#2a7a4a" text-anchor="middle">(-∞, 3)</text>
+      <text x="114" y="240" class="e3s" fill="#2a7a4a" text-anchor="middle">(3, 5)</text>
+      <text x="220" y="166" class="e3s" fill="#2a7a4a" text-anchor="middle">(5, +∞)</text>
+
+      <!-- Divider -->
+      <line x1="310" y1="10" x2="310" y2="244" stroke="#e0eee8" stroke-width="1.5" stroke-dasharray="4"/>
+
+      <!-- ── Invalid BST ── -->
+      <text x="490" y="14" class="e3s" fill="#b5460f" text-anchor="middle" font-weight="600">✗ Invalid BST</text>
+
+      <circle cx="490" cy="60"  r="20" fill="#1a6b3c" opacity="0.18" stroke="#1a6b3c" stroke-width="1.8"/>
+      <circle cx="420" cy="132" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="560" cy="132" r="20" fill="#fde4e4" stroke="#b5460f" stroke-width="2"/>
+      <circle cx="530" cy="204" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+      <circle cx="590" cy="204" r="20" fill="#eaf5ee" stroke="#a8d0b8" stroke-width="1.2"/>
+
+      <text x="490" y="65"  class="e3m" fill="#1a6b3c" text-anchor="middle">5</text>
+      <text x="420" y="137" class="e3m" fill="#2a7a4a" text-anchor="middle">1</text>
+      <text x="560" y="137" class="e3m" fill="#b5460f" text-anchor="middle">4</text>
+      <text x="530" y="209" class="e3m" fill="#2a7a4a" text-anchor="middle">3</text>
+      <text x="590" y="209" class="e3m" fill="#2a7a4a" text-anchor="middle">6</text>
+
+      <line x1="476" y1="77"  x2="434" y2="115" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e3a)"/>
+      <line x1="504" y1="77"  x2="546" y2="115" stroke="#b5460f" stroke-width="2"   marker-end="url(#e3r)"/>
+      <line x1="548" y1="149" x2="542" y2="187" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e3a)"/>
+      <line x1="572" y1="149" x2="578" y2="187" stroke="#a8d0b8" stroke-width="1.5" marker-end="url(#e3a)"/>
+
+      <!-- Annotation above and below node 4 -->
+      <text x="552" y="92"  class="e3s" fill="#b5460f">bounds (5,+∞)</text>
+      <text x="584" y="136" class="e3s" fill="#b5460f">4&lt;5 INVALID ✗</text>
+    </svg>
+    <p class="diagram-caption">Fig 5. Left: valid BST — every node satisfies its inherited bounds. Right: invalid BST — node 4 is in the right subtree of 5 but 4 &lt; 5, violating the lower bound (5, +∞).</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public boolean</span> <span class="fn">isValidBST</span>(TreeNode root) {
+    <span class="kw">return</span> <span class="fn">validate</span>(root, Long.MIN_VALUE, Long.MAX_VALUE);
+}
+
+<span class="kw">private boolean</span> <span class="fn">validate</span>(TreeNode node, <span class="kw">long</span> min, <span class="kw">long</span> max) {
+    <span class="kw">if</span> (node == <span class="kw">null</span>) <span class="kw">return true</span>;
+    <span class="kw">if</span> (node.val <= min || node.val >= max) <span class="kw">return false</span>;
+
+    <span class="kw">return</span> <span class="fn">validate</span>(node.left,  min,       node.val)  <span class="cm">// left: upper bound tightens</span>
+        && <span class="fn">validate</span>(node.right, node.val,  max);      <span class="cm">// right: lower bound tightens</span>
+}
+<span class="cm">// Time: O(n)  |  Space: O(h)</span></pre>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Why Long.MIN_VALUE / Long.MAX_VALUE</div>
+    <p>Using <code>long</code> bounds rather than <code>int</code> avoids overflow when node values are <code>Integer.MIN_VALUE</code> or <code>Integer.MAX_VALUE</code> — a common edge case in BST validation.</p>
+  </div>
+
+  <!-- Template -->
+  <h2>Universal Template</h2>
+  <p>The three DFS skeletons that cover most tree problems:</p>
+
+<pre><span class="lang">Java 8 — Pattern 1: Postorder (combine results from children)</span><span class="kw">int</span> <span class="fn">dfs</span>(TreeNode node) {
+    <span class="kw">if</span> (node == <span class="kw">null</span>) <span class="kw">return</span> BASE_CASE;
+    <span class="kw">int</span> left  = <span class="fn">dfs</span>(node.left);
+    <span class="kw">int</span> right = <span class="fn">dfs</span>(node.right);
+    <span class="kw">return</span> <span class="fn">combine</span>(left, right, node.val);  <span class="cm">// e.g. 1 + max(left, right)</span>
+}</pre>
+
+<pre><span class="lang">Java 8 — Pattern 2: Preorder (pass state down)</span><span class="kw">void</span> <span class="fn">dfs</span>(TreeNode node, <span class="kw">int</span> state) {
+    <span class="kw">if</span> (node == <span class="kw">null</span>) <span class="kw">return</span>;
+    <span class="kw">int</span> newState = <span class="fn">update</span>(state, node.val);  <span class="cm">// e.g. state + node.val</span>
+    <span class="fn">dfs</span>(node.left,  newState);
+    <span class="fn">dfs</span>(node.right, newState);
+}</pre>
+
+<pre><span class="lang">Java 8 — Pattern 3: BST search (prune one branch)</span>TreeNode <span class="fn">search</span>(TreeNode node, <span class="kw">int</span> target) {
+    <span class="kw">if</span> (node == <span class="kw">null</span> || node.val == target) <span class="kw">return</span> node;
+    <span class="kw">if</span> (target &lt; node.val) <span class="kw">return</span> <span class="fn">search</span>(node.left,  target);
+    <span class="kw">else</span>                   <span class="kw">return</span> <span class="fn">search</span>(node.right, target);
+}</pre>
+
+  <!-- Complexity -->
+  <h2>Complexity Summary</h2>
+  <table class="data-table">
+    <thead><tr><th>Operation</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>DFS traversal (any order)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(h)</span></td><td>h = height; O(n) worst case for skewed tree</td></tr>
+      <tr><td>BST search / insert</td><td><span class="badge b-yellow">O(h)</span></td><td><span class="badge b-yellow">O(h)</span></td><td>O(log n) balanced, O(n) worst case</td></tr>
+      <tr><td>Max depth / path sum</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(h)</span></td><td>Must visit all nodes</td></tr>
+      <tr><td>LCA (general binary tree)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(h)</span></td><td>May need to visit all nodes</td></tr>
+      <tr><td>Validate BST</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(h)</span></td><td>Passes bounds down; visits all nodes</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  <h2>When to Reach for Tree DFS</h2>
+  <ul class="signal-list">
+    <li>Any problem on a binary tree where you need to visit all nodes — DFS with the right traversal order</li>
+    <li><strong>"Max/min path"</strong>, <strong>"sum of path"</strong>, <strong>"diameter"</strong> — postorder: compute at children, combine at parent</li>
+    <li><strong>"Build/serialize/reconstruct"</strong> a tree — preorder: process root before children</li>
+    <li><strong>"Validate BST"</strong>, <strong>"search BST"</strong>, <strong>"insert BST"</strong> — use the BST invariant to prune one branch</li>
+    <li><strong>"Lowest Common Ancestor"</strong> — postorder propagation of found nodes upward</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Practice Ladder</h2>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Problem</th><th>Difficulty</th><th>Key Insight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Maximum Depth of Binary Tree (LC 104)</td><td><span class="badge b-green">Easy</span></td><td>Postorder: 1 + max(left, right) — covered above</td></tr>
+      <tr><td>2</td><td>Invert Binary Tree (LC 226)</td><td><span class="badge b-green">Easy</span></td><td>Postorder: swap children after recursing both sides</td></tr>
+      <tr><td>3</td><td>Diameter of Binary Tree (LC 543)</td><td><span class="badge b-green">Easy</span></td><td>Postorder: diameter through node = left depth + right depth</td></tr>
+      <tr><td>4</td><td>Balanced Binary Tree (LC 110)</td><td><span class="badge b-green">Easy</span></td><td>Postorder: return -1 to signal imbalance early and prune</td></tr>
+      <tr><td>5</td><td>Validate Binary Search Tree (LC 98)</td><td><span class="badge b-yellow">Medium</span></td><td>Pass min/max bounds down — covered above</td></tr>
+      <tr><td>6</td><td>Lowest Common Ancestor (LC 236)</td><td><span class="badge b-yellow">Medium</span></td><td>Postorder propagation — covered above</td></tr>
+      <tr><td>7</td><td>Binary Tree Maximum Path Sum (LC 124)</td><td><span class="badge b-red">Hard</span></td><td>Postorder: gain = max(0,left) + max(0,right) + val; track global max</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Learning Path</div>
+    <p>LC 124 (Binary Tree Maximum Path Sum) is the most challenging problem in this set. It requires understanding that a path through a node can use both children for the global answer, but only one child when propagating upward to the parent. If you can derive it without hints, postorder DFS is truly internalized. Try it before moving to Post #11.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <h3>Up Next — Post #11: Trees & BFS</h3>
+  <p>Post #11 covers breadth-first search on trees — level order traversal, right-side view, and zigzag patterns. BFS replaces the recursive call stack with an explicit queue, making level-by-level processing natural.</p>
+
+  <p style="color:var(--ink-faint); font-size:13px; margin-top:44px; font-style:italic;">
+    Interview Prep Series · Post #10 of 20
+  </p>
+
+</div>
+</main>
+
+<footer class="post-footer">
+  <strong>Interview Prep Series</strong> — Arrays & Hashing · Two Pointers · Sliding Window · Prefix Sum · Binary Search · Sorting · Intervals · Stacks & Queues · Linked Lists · Trees & DFS · and 10 more.
+  <p class="next-label">Next: Trees & BFS →</p>
+</footer>
+
+</body>
+</html>
