@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trees & BFS — Interview Prep Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:        #051018;
+      --ink-soft:   #0d1e30;
+      --ink-faint:  #2a6a9a;
+      --paper:      #f2f8fc;
+      --paper-warm: #eaf4fa;
+      --accent:     #1a7aaf;
+      --accent-alt: #1a3f7a;
+      --orange:     #b5460f;
+      --green:      #0e7c5b;
+      --highlight:  #3aaad0;
+      --code-bg:    #010810;
+      --code-fg:    #88c8f0;
+      --border:     #a8c8e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--paper); color: var(--ink); font-family: 'Source Sans 3', sans-serif; font-size: 17px; line-height: 1.8; }
+
+    .hero { background: var(--ink); color: var(--paper); padding: 72px 24px 56px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 110%, #1a7aaf22, transparent); }
+    .hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--highlight), #88d8f8); }
+    .hero-eyebrow { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--highlight); margin-bottom: 24px; }
+    .hero h1 { font-family: 'Lora', serif; font-size: clamp(2rem, 5.5vw, 3.4rem); font-weight: 700; line-height: 1.15; max-width: 680px; margin: 0 auto 16px; }
+    .hero-sub { color: #2a7aaa; font-size: 15px; font-weight: 300; max-width: 580px; margin: 0 auto 36px; }
+    .hero-meta { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; font-size: 12px; color: #2a7aaa; letter-spacing: 0.04em; }
+
+    .container { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+    .post-body { padding: 60px 24px 96px; }
+
+    h2 { font-family: 'Lora', serif; font-size: 1.75rem; font-weight: 700; color: var(--ink); margin: 52px 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+    h3 { font-family: 'Source Sans 3', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--accent-alt); margin: 32px 0 8px; letter-spacing: 0.06em; text-transform: uppercase; }
+    p { margin-bottom: 16px; color: var(--ink-soft); font-weight: 300; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    .callout { border-left: 3px solid var(--accent); background: var(--paper-warm); padding: 16px 20px; margin: 24px 0; border-radius: 0 5px 5px 0; }
+    .callout-tip  { border-left-color: var(--green); }
+    .callout-note { border-left-color: var(--accent-alt); }
+    .callout-label { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+    .callout-tip  .callout-label { color: var(--green); }
+    .callout-note .callout-label { color: var(--accent-alt); }
+    .callout p { margin: 0; font-size: 15px; }
+
+    pre { background: var(--code-bg); color: var(--code-fg); font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; padding: 26px 28px; border-radius: 6px; overflow-x: auto; margin: 20px 0 28px; position: relative; }
+    pre .lang { position: absolute; top: 10px; right: 14px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #020c18; }
+    .kw  { color: #3aaad0; }
+    .fn  { color: #58c0e8; }
+    .cm  { color: #3a8ab0; font-style: italic; }
+    .tp  { color: #88c8f0; }
+    .num { color: #f0c878; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.83em; background: var(--paper-warm); border: 1px solid var(--border); padding: 2px 5px; border-radius: 3px; color: var(--orange); }
+
+    .diagram-wrap { margin: 32px 0; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 28px 16px 20px; text-align: center; box-shadow: 0 1px 12px rgba(0,0,0,0.04); }
+    .diagram-caption { font-size: 12.5px; color: var(--ink-faint); margin-top: 14px; font-style: italic; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .data-table th { background: var(--ink); color: var(--paper); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); font-weight: 300; }
+    .data-table tr:nth-child(even) td { background: var(--paper-warm); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+    .b-green  { background: #d4f0e4; color: #0a6e46; }
+    .b-yellow { background: #fdf0c8; color: #8a6000; }
+    .b-red    { background: #fde4e4; color: #a01010; }
+
+    ul.signal-list { margin: 0 0 18px 24px; color: var(--ink-soft); font-weight: 300; line-height: 2; }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+    .post-footer { background: var(--ink); color: #2a7aaa; text-align: center; padding: 44px 24px; font-size: 13px; }
+    .post-footer strong { color: #3aaad0; }
+    .next-label { margin-top: 10px; color: var(--highlight); font-style: italic; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">Interview Prep Series · Post #11 of 20</div>
+  <h1>Trees & BFS</h1>
+  <p class="hero-sub">When DFS recurses, BFS queues. Replace the implicit call stack with an explicit queue and tree traversal becomes level-by-level — unlocking right-side views, zigzag patterns, and level-maximum problems that DFS cannot express as cleanly.</p>
+  <div class="hero-meta">
+    <span>⏱ 5 min read</span>
+    <span>🌲 Trees</span>
+    <span>🔑 Java 8</span>
+    <span>📈 Intermediate → Advanced</span>
+  </div>
+</header>
+
+<main class="post-body">
+<div class="container">
+
+  <p>Post #10 solved tree problems by going <strong>deep</strong> — following one branch all the way to a leaf before backtracking. BFS goes <strong>wide</strong> instead: it visits every node at depth 1 before any node at depth 2, every node at depth 2 before any at depth 3, and so on. The mechanism is an explicit queue. Enqueue the root, then repeatedly dequeue a node, process it, and enqueue its children. The FIFO ordering guarantees level-by-level traversal automatically.</p>
+
+  <div class="callout callout-note">
+    <div class="callout-label">Prerequisites</div>
+    <p>Post #10 (Trees & DFS) — tree structure, TreeNode, and recursive traversal. Post #8 (Stacks & Queues) — queue operations.</p>
+  </div>
+
+  <!-- Core Pattern -->
+  <h2>The Core Pattern</h2>
+  <p>Every BFS tree problem follows the same skeleton. The key detail is <strong>capturing the queue size at the start of each iteration</strong>. That snapshot tells you how many nodes belong to the current level so you can process them as a group before moving to the next.</p>
+
+<pre><span class="lang">Java 8 — BFS skeleton</span>Queue&lt;TreeNode&gt; queue = <span class="kw">new</span> LinkedList&lt;&gt;();
+queue.<span class="fn">offer</span>(root);
+
+<span class="kw">while</span> (!queue.<span class="fn">isEmpty</span>()) {
+    <span class="kw">int</span> size = queue.<span class="fn">size</span>();          <span class="cm">// snapshot: nodes in this level</span>
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; size; i++) {
+        TreeNode node = queue.<span class="fn">poll</span>();
+        <span class="cm">// process node</span>
+        <span class="kw">if</span> (node.left  != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.left);
+        <span class="kw">if</span> (node.right != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.right);
+    }
+    <span class="cm">// level boundary: all nodes at this depth processed</span>
+}</pre>
+
+  <div class="callout">
+    <div class="callout-label">DFS vs BFS</div>
+    <p><strong>DFS</strong> — recursive call stack, depth-first, natural for path, ancestor, and subtree problems.<br>
+    <strong>BFS</strong> — explicit queue, level-first, natural for level grouping, distance, and shortest-path problems.<br>
+    Neither is universally better — the problem structure determines the choice.</p>
+  </div>
+
+  <!-- Example 1 -->
+  <h2>Example 1 — Binary Tree Level Order Traversal</h2>
+  <p><em>LeetCode #102 · Medium · BFS level grouping</em></p>
+  <p>Given the root of a binary tree, return the level order traversal of its node values — a list of lists, one per level, from left to right.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p>Tree <code>[3, 9, 20, null, null, 15, 7]</code> → <strong>[[3], [9, 20], [15, 7]]</strong></p>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 220" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .b1m { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .b1l { font-family:'Source Sans 3',sans-serif; font-size:12px; }
+          .b1s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="b1a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#a8c8e0"/>
+        </marker>
+        <marker id="b1g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#1a7aaf"/>
+        </marker>
+      </defs>
+
+      <!-- Tree: 3(330,36) 9(220,96) 20(440,96) 15(380,156) 7(500,156) -->
+      <circle cx="330" cy="36"  r="22" fill="#1a7aaf" opacity="0.18" stroke="#1a7aaf" stroke-width="1.8"/>
+      <circle cx="220" cy="96"  r="22" fill="#1a7aaf" opacity="0.10" stroke="#1a7aaf" stroke-width="1.5"/>
+      <circle cx="440" cy="96"  r="22" fill="#1a7aaf" opacity="0.10" stroke="#1a7aaf" stroke-width="1.5"/>
+      <circle cx="380" cy="156" r="22" fill="#eaf4fa" stroke="#a8c8e0" stroke-width="1.2"/>
+      <circle cx="500" cy="156" r="22" fill="#eaf4fa" stroke="#a8c8e0" stroke-width="1.2"/>
+
+      <text x="330" y="41"  class="b1m" fill="#1a7aaf" text-anchor="middle">3</text>
+      <text x="220" y="101" class="b1m" fill="#1a7aaf" text-anchor="middle">9</text>
+      <text x="440" y="101" class="b1m" fill="#1a7aaf" text-anchor="middle">20</text>
+      <text x="380" y="161" class="b1m" fill="#2a6a9a" text-anchor="middle">15</text>
+      <text x="500" y="161" class="b1m" fill="#2a6a9a" text-anchor="middle">7</text>
+
+      <line x1="313" y1="53" x2="237" y2="79" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#b1a)"/>
+      <line x1="347" y1="53" x2="423" y2="79" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#b1a)"/>
+      <line x1="427" y1="113" x2="397" y2="137" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#b1a)"/>
+      <line x1="453" y1="113" x2="483" y2="137" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#b1a)"/>
+
+      <!-- Level labels and brackets on left -->
+      <text x="16" y="40"  class="b1s" fill="#1a7aaf" font-weight="600">L1</text>
+      <text x="16" y="100" class="b1s" fill="#1a7aaf" font-weight="600">L2</text>
+      <text x="16" y="160" class="b1s" fill="#2a6a9a" font-weight="600">L3</text>
+
+      <!-- Queue state trace -->
+      <rect x="14" y="186" width="630" height="30" rx="4" fill="#f2f8fc" stroke="#a8c8e0" stroke-width="1"/>
+      <text x="24"  y="196" class="b1s" fill="#1a7aaf" font-weight="600">L1:</text>
+      <text x="42"  y="196" class="b1s" fill="#2a6a9a">queue=[3] → process 3 → enqueue 9,20</text>
+      <text x="24"  y="210" class="b1s" fill="#1a7aaf" font-weight="600">L2:</text>
+      <text x="42"  y="210" class="b1s" fill="#2a6a9a">queue=[9,20] → process 9,20 → enqueue 15,7</text>
+      <text x="320" y="196" class="b1s" fill="#1a7aaf" font-weight="600">L3:</text>
+      <text x="338" y="196" class="b1s" fill="#2a6a9a">queue=[15,7] → process 15,7 → no children</text>
+      <text x="320" y="210" class="b1s" fill="#1a7aaf" font-weight="600">Result:</text>
+      <text x="360" y="210" class="b1m" fill="#1a7aaf">[[3], [9,20], [15,7]]  ✓</text>
+    </svg>
+    <p class="diagram-caption">Fig 1. BFS level-order trace. The queue size snapshot at the start of each outer iteration determines which nodes belong to the current level.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="fn">levelOrder</span>(TreeNode root) {
+    List&lt;List&lt;Integer&gt;&gt; result = <span class="kw">new</span> ArrayList&lt;&gt;();
+    <span class="kw">if</span> (root == <span class="kw">null</span>) <span class="kw">return</span> result;
+
+    Queue&lt;TreeNode&gt; queue = <span class="kw">new</span> LinkedList&lt;&gt;();
+    queue.<span class="fn">offer</span>(root);
+
+    <span class="kw">while</span> (!queue.<span class="fn">isEmpty</span>()) {
+        <span class="kw">int</span> size = queue.<span class="fn">size</span>();
+        List&lt;Integer&gt; level = <span class="kw">new</span> ArrayList&lt;&gt;();
+
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; size; i++) {
+            TreeNode node = queue.<span class="fn">poll</span>();
+            level.<span class="fn">add</span>(node.val);
+            <span class="kw">if</span> (node.left  != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.left);
+            <span class="kw">if</span> (node.right != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.right);
+        }
+        result.<span class="fn">add</span>(level);
+    }
+    <span class="kw">return</span> result;
+}
+<span class="cm">// Time: O(n)  |  Space: O(w)  where w = max width of tree</span></pre>
+
+  <!-- Example 2 -->
+  <h2>Example 2 — Binary Tree Right Side View</h2>
+  <p><em>LeetCode #199 · Medium · BFS last-node-per-level</em></p>
+  <p>Given the root of a binary tree, imagine standing to its right. Return the values of the nodes visible from the right side, from top to bottom.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p>Tree <code>[1, 2, 3, null, 5]</code> → <strong>[1, 3, 5]</strong><br>
+    At level 3, only node 5 is visible — node 3 has no children on the left of 5.</p>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 660 198" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .b2m { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .b2s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="b2a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#a8c8e0"/>
+        </marker>
+      </defs>
+
+      <!-- Tree: 1(280,36) 2(180,96) 3(380,96) 5(240,156) -->
+      <!-- Highlight rightmost per level in accent -->
+      <circle cx="280" cy="36"  r="22" fill="#1a7aaf" opacity="0.25" stroke="#1a7aaf" stroke-width="2"/>
+      <circle cx="180" cy="96"  r="22" fill="#eaf4fa" stroke="#a8c8e0" stroke-width="1.2"/>
+      <circle cx="380" cy="96"  r="22" fill="#1a7aaf" opacity="0.25" stroke="#1a7aaf" stroke-width="2"/>
+      <circle cx="240" cy="156" r="22" fill="#1a7aaf" opacity="0.25" stroke="#1a7aaf" stroke-width="2"/>
+
+      <text x="280" y="41"  class="b2m" fill="#1a7aaf" text-anchor="middle">1</text>
+      <text x="180" y="101" class="b2m" fill="#2a6a9a" text-anchor="middle">2</text>
+      <text x="380" y="101" class="b2m" fill="#1a7aaf" text-anchor="middle">3</text>
+      <text x="240" y="161" class="b2m" fill="#1a7aaf" text-anchor="middle">5</text>
+
+      <line x1="263" y1="53" x2="197" y2="79" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#b2a)"/>
+      <line x1="297" y1="53" x2="363" y2="79" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#b2a)"/>
+      <line x1="193" y1="113" x2="224" y2="137" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#b2a)"/>
+
+      <!-- Eye / view indicator on right -->
+      <text x="440" y="40"  class="b2s" fill="#1a7aaf">← visible (last in L1)</text>
+      <text x="440" y="100" class="b2s" fill="#1a7aaf">← visible (last in L2)</text>
+      <text x="440" y="160" class="b2s" fill="#1a7aaf">← visible (last in L3)</text>
+      <text x="206" y="100" class="b2s" fill="#9ab8d0">hidden</text>
+      <line x1="420" y1="36"  x2="302" y2="36"  stroke="#1a7aaf" stroke-width="1" stroke-dasharray="3" opacity="0.4"/>
+      <line x1="420" y1="96"  x2="402" y2="96"  stroke="#1a7aaf" stroke-width="1" stroke-dasharray="3" opacity="0.4"/>
+      <line x1="420" y1="156" x2="262" y2="156" stroke="#1a7aaf" stroke-width="1" stroke-dasharray="3" opacity="0.4"/>
+
+      <!-- Result -->
+      
+      <text x="14" y="194" class="b2s" fill="#1a7aaf" font-weight="600">Right side view: [1, 3, 5] — the last node at each level  ✓</text>
+    </svg>
+    <p class="diagram-caption">Fig 2. Right side view. Highlighted nodes (darker blue) are the last in each BFS level — the only ones visible from the right. Node 2 is hidden behind node 3.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public</span> List&lt;Integer&gt; <span class="fn">rightSideView</span>(TreeNode root) {
+    List&lt;Integer&gt; result = <span class="kw">new</span> ArrayList&lt;&gt;();
+    <span class="kw">if</span> (root == <span class="kw">null</span>) <span class="kw">return</span> result;
+
+    Queue&lt;TreeNode&gt; queue = <span class="kw">new</span> LinkedList&lt;&gt;();
+    queue.<span class="fn">offer</span>(root);
+
+    <span class="kw">while</span> (!queue.<span class="fn">isEmpty</span>()) {
+        <span class="kw">int</span> size = queue.<span class="fn">size</span>();
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; size; i++) {
+            TreeNode node = queue.<span class="fn">poll</span>();
+            <span class="kw">if</span> (i == size - <span class="num">1</span>) result.<span class="fn">add</span>(node.val);  <span class="cm">// last node in level</span>
+            <span class="kw">if</span> (node.left  != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.left);
+            <span class="kw">if</span> (node.right != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.right);
+        }
+    }
+    <span class="kw">return</span> result;
+}
+<span class="cm">// Time: O(n)  |  Space: O(w)</span></pre>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Variants from the same skeleton</div>
+    <p><strong>Left side view</strong> — record <code>i == 0</code> instead of <code>i == size - 1</code>.<br>
+    <strong>Max level sum</strong> — accumulate sum inside inner loop, record max after.<br>
+    <strong>Average of levels</strong> — sum inside inner loop, divide by <code>size</code> after.</p>
+  </div>
+
+  <!-- Example 3 -->
+  <h2>Example 3 — Binary Tree Zigzag Level Order</h2>
+  <p><em>LeetCode #103 · Medium · BFS with direction flag</em></p>
+  <p>Given the root of a binary tree, return its zigzag level order traversal — left-to-right for odd levels, right-to-left for even levels, alternating.</p>
+
+  <div class="callout">
+    <div class="callout-label">Example</div>
+    <p>Tree <code>[3, 9, 20, null, null, 15, 7]</code> → <strong>[[3], [20, 9], [15, 7]]</strong><br>
+    Level 2 is reversed: 20 appears before 9.</p>
+  </div>
+
+  <p>BFS collects each level normally. A boolean flag tracks direction. When reversing, insert each value at the <strong>front</strong> of the level list using <code>addFirst()</code> instead of <code>addLast()</code>. Toggle the flag after each level.</p>
+
+  <div class="diagram-wrap">
+    <svg     <svg viewBox="0 0 660 220" xmlns="http://www.w3.org/2000/svg" width="100%" style="max-width:660px">
+      <defs>
+        <style>
+          .z3m { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; }
+          .z3s { font-family:'Source Sans 3',sans-serif; font-size:11px; }
+        </style>
+        <marker id="z3a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#a8c8e0"/>
+        </marker>
+        <marker id="z3r" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#1a7aaf"/>
+        </marker>
+        <marker id="z3l" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto-start-reverse">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#b5460f"/>
+        </marker>
+      </defs>
+
+      <!-- Tree: 3(200,36) 9(120,96) 20(280,96) 15(220,156) 7(340,156) -->
+      <circle cx="200" cy="36"  r="20" fill="#1a7aaf" opacity="0.18" stroke="#1a7aaf" stroke-width="1.8"/>
+      <circle cx="120" cy="96"  r="20" fill="#eaf4fa" stroke="#a8c8e0" stroke-width="1.2"/>
+      <circle cx="280" cy="96"  r="20" fill="#eaf4fa" stroke="#a8c8e0" stroke-width="1.2"/>
+      <circle cx="220" cy="156" r="20" fill="#eaf4fa" stroke="#a8c8e0" stroke-width="1.2"/>
+      <circle cx="340" cy="156" r="20" fill="#eaf4fa" stroke="#a8c8e0" stroke-width="1.2"/>
+      <text x="200" y="41"  class="z3m" fill="#1a7aaf" text-anchor="middle">3</text>
+      <text x="120" y="101" class="z3m" fill="#2a6a9a" text-anchor="middle">9</text>
+      <text x="280" y="101" class="z3m" fill="#2a6a9a" text-anchor="middle">20</text>
+      <text x="220" y="161" class="z3m" fill="#2a6a9a" text-anchor="middle">15</text>
+      <text x="340" y="161" class="z3m" fill="#2a6a9a" text-anchor="middle">7</text>
+      <line x1="185" y1="53" x2="135" y2="79" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#z3a)"/>
+      <line x1="215" y1="53" x2="265" y2="79" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#z3a)"/>
+      <line x1="267" y1="113" x2="237" y2="137" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#z3a)"/>
+      <line x1="293" y1="113" x2="323" y2="137" stroke="#a8c8e0" stroke-width="1.5" marker-end="url(#z3a)"/>
+
+      <!-- Divider -->
+      <line x1="380" y1="10" x2="380" y2="210" stroke="#e0eef8" stroke-width="1" stroke-dasharray="3"/>
+
+      <!-- Right panel: 3 rows, tops at y=14, 82, 150, stride=68 -->
+      <!-- Each row: label(y+12), arrow(y+30), description(y+46), result boxes at arrow y -->
+
+      <!-- ── Row 1: Level 1, leftToRight=true, addLast ── -->
+      <text x="392" y="26"  class="z3s" fill="#1a7aaf" font-weight="600">Level 1 — leftToRight = true</text>
+      <!-- Arrow → then boxes then result -->
+      <line x1="392" y1="44" x2="432" y2="44" stroke="#1a7aaf" stroke-width="1.5" marker-end="url(#z3r)"/>
+      <text x="440" y="40"  class="z3s" fill="#1a7aaf">addLast</text>
+      <rect x="510" y="32" width="34" height="24" rx="4" fill="#eaf4fa" stroke="#1a7aaf" stroke-width="1.5"/>
+      <text x="527" y="48" class="z3m" fill="#1a7aaf" text-anchor="middle">3</text>
+      <text x="550" y="48" class="z3s" fill="#2a6a9a">→ [3]</text>
+
+      <!-- ── Row 2: Level 2, leftToRight=false, addFirst ── -->
+      <text x="392" y="94"  class="z3s" fill="#b5460f" font-weight="600">Level 2 — leftToRight = false</text>
+      <!-- Arrow ← then boxes then result -->
+      <line x1="432" y1="112" x2="394" y2="112" stroke="#b5460f" stroke-width="1.5" marker-end="url(#z3l)"/>
+      <text x="440" y="108" class="z3s" fill="#b5460f">addFirst</text>
+      <rect x="510" y="100" width="34" height="24" rx="4" fill="#fff0ec" stroke="#b5460f" stroke-width="1.5"/>
+      <rect x="548" y="100" width="34" height="24" rx="4" fill="#fff0ec" stroke="#b5460f" stroke-width="1.5"/>
+      <text x="527" y="116" class="z3m" fill="#b5460f" text-anchor="middle">20</text>
+      <text x="565" y="116" class="z3m" fill="#b5460f" text-anchor="middle">9</text>
+      <text x="392" y="138" class="z3s" fill="#b5460f">9 dequeued first but addFirst inserts at front → [20, 9]</text>
+
+      <!-- ── Row 3: Level 3, leftToRight=true, addLast ── -->
+      <text x="392" y="162" class="z3s" fill="#1a7aaf" font-weight="600">Level 3 — leftToRight = true</text>
+      <line x1="392" y1="180" x2="432" y2="180" stroke="#1a7aaf" stroke-width="1.5" marker-end="url(#z3r)"/>
+      <text x="440" y="176" class="z3s" fill="#1a7aaf">addLast</text>
+      <rect x="510" y="168" width="34" height="24" rx="4" fill="#eaf4fa" stroke="#1a7aaf" stroke-width="1.5"/>
+      <rect x="548" y="168" width="34" height="24" rx="4" fill="#eaf4fa" stroke="#1a7aaf" stroke-width="1.5"/>
+      <text x="527" y="184" class="z3m" fill="#1a7aaf" text-anchor="middle">15</text>
+      <text x="565" y="184" class="z3m" fill="#1a7aaf" text-anchor="middle">7</text>
+      <text x="600" y="184" class="z3s" fill="#2a6a9a">→ [15,7]</text>
+    </svg>
+    <p class="diagram-caption">Fig 3. Zigzag traversal. Odd levels use <code>addLast</code> (blue, left→right); even levels use <code>addFirst</code> (orange, right→left). The BFS queue order stays unchanged — only the insertion end alternates.</p>
+  </div>
+
+<pre><span class="lang">Java 8</span><span class="kw">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="fn">zigzagLevelOrder</span>(TreeNode root) {
+    List&lt;List&lt;Integer&gt;&gt; result = <span class="kw">new</span> ArrayList&lt;&gt;();
+    <span class="kw">if</span> (root == <span class="kw">null</span>) <span class="kw">return</span> result;
+
+    Queue&lt;TreeNode&gt; queue = <span class="kw">new</span> LinkedList&lt;&gt;();
+    queue.<span class="fn">offer</span>(root);
+    <span class="kw">boolean</span> leftToRight = <span class="kw">true</span>;
+
+    <span class="kw">while</span> (!queue.<span class="fn">isEmpty</span>()) {
+        <span class="kw">int</span> size = queue.<span class="fn">size</span>();
+        LinkedList&lt;Integer&gt; level = <span class="kw">new</span> LinkedList&lt;&gt;();
+
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; size; i++) {
+            TreeNode node = queue.<span class="fn">poll</span>();
+            <span class="kw">if</span> (leftToRight) level.<span class="fn">addLast</span>(node.val);
+            <span class="kw">else</span>             level.<span class="fn">addFirst</span>(node.val);  <span class="cm">// insert at front to reverse</span>
+            <span class="kw">if</span> (node.left  != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.left);
+            <span class="kw">if</span> (node.right != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.right);
+        }
+        result.<span class="fn">add</span>(level);
+        leftToRight = !leftToRight;  <span class="cm">// toggle direction each level</span>
+    }
+    <span class="kw">return</span> result;
+}
+<span class="cm">// Time: O(n)  |  Space: O(w)</span></pre>
+
+  <!-- Template -->
+  <h2>Universal Template</h2>
+  <p>All BFS tree problems are variations of this single skeleton — only what happens inside the inner loop changes:</p>
+
+<pre><span class="lang">Java 8 — BFS universal template</span>Queue&lt;TreeNode&gt; queue = <span class="kw">new</span> LinkedList&lt;&gt;();
+queue.<span class="fn">offer</span>(root);
+<span class="kw">int</span> level = <span class="num">0</span>;
+
+<span class="kw">while</span> (!queue.<span class="fn">isEmpty</span>()) {
+    <span class="kw">int</span> size = queue.<span class="fn">size</span>();          <span class="cm">// nodes at current level</span>
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; size; i++) {
+        TreeNode node = queue.<span class="fn">poll</span>();
+
+        <span class="cm">// i == 0        → first node (left side view)</span>
+        <span class="cm">// i == size - 1 → last node  (right side view)</span>
+        <span class="cm">// accumulate    → sum, max, average per level</span>
+        <span class="cm">// addFirst/Last → zigzag direction</span>
+
+        <span class="kw">if</span> (node.left  != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.left);
+        <span class="kw">if</span> (node.right != <span class="kw">null</span>) queue.<span class="fn">offer</span>(node.right);
+    }
+    level++;
+}</pre>
+
+  <!-- Complexity -->
+  <h2>Complexity Summary</h2>
+  <table class="data-table">
+    <thead><tr><th>Problem</th><th>Time</th><th>Space</th><th>Key Operation</th></tr></thead>
+    <tbody>
+      <tr><td>Level Order Traversal (LC 102)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(w)</span></td><td>Collect all nodes per level</td></tr>
+      <tr><td>Right Side View (LC 199)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(w)</span></td><td>Record last node per level</td></tr>
+      <tr><td>Zigzag Level Order (LC 103)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(w)</span></td><td><code>addFirst</code> / <code>addLast</code> by flag</td></tr>
+      <tr><td>Maximum Level Sum (LC 1161)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(w)</span></td><td>Track max sum across levels</td></tr>
+      <tr><td>Average of Levels (LC 637)</td><td><span class="badge b-yellow">O(n)</span></td><td><span class="badge b-yellow">O(w)</span></td><td>sum / size per level</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-label">Space Note</div>
+    <p>Space is O(w) where w is the maximum tree width. For a balanced binary tree the last level holds up to n/2 nodes, so O(w) = O(n) in the worst case. This contrasts with DFS which uses O(h) stack space — O(log n) balanced, O(n) skewed.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <h2>When to Reach for BFS</h2>
+  <ul class="signal-list">
+    <li><strong>"Level order"</strong> output, or any result grouped by depth — BFS with size snapshot</li>
+    <li><strong>"Right/left side view"</strong> — last/first node per level</li>
+    <li><strong>"Maximum / minimum / average per level"</strong> — aggregate inside the inner loop</li>
+    <li><strong>"Zigzag"</strong> or alternating direction — BFS with direction flag</li>
+    <li><strong>"Shortest path"</strong> in an unweighted graph or grid — BFS guarantees minimum distance</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Practice Ladder</h2>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Problem</th><th>Difficulty</th><th>Key Insight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Binary Tree Level Order Traversal (LC 102)</td><td><span class="badge b-yellow">Medium</span></td><td>BFS skeleton with level grouping — covered above</td></tr>
+      <tr><td>2</td><td>Binary Tree Right Side View (LC 199)</td><td><span class="badge b-yellow">Medium</span></td><td>Last node per level — covered above</td></tr>
+      <tr><td>3</td><td>Average of Levels in Binary Tree (LC 637)</td><td><span class="badge b-green">Easy</span></td><td>Sum all nodes per level, divide by count</td></tr>
+      <tr><td>4</td><td>Maximum Level Sum of a Binary Tree (LC 1161)</td><td><span class="badge b-yellow">Medium</span></td><td>Track level sum, record maximum across all levels</td></tr>
+      <tr><td>5</td><td>Binary Tree Zigzag Level Order (LC 103)</td><td><span class="badge b-yellow">Medium</span></td><td>addFirst / addLast toggle — covered above</td></tr>
+      <tr><td>6</td><td>Find Largest Value in Each Tree Row (LC 515)</td><td><span class="badge b-yellow">Medium</span></td><td>Track running max inside inner loop, reset per level</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Learning Path</div>
+    <p>LC 515 (Find Largest Value in Each Tree Row) requires maintaining a running maximum inside the inner loop and resetting it between levels. If you can implement all six problems cleanly from the single BFS skeleton without looking up the template, the pattern is fully internalized. Try them before moving to Post #12.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <h3>Up Next — Post #12: Tries</h3>
+  <p>Post #12 covers the trie (prefix tree) — a tree where each edge represents a character rather than a value. Tries make prefix-based lookups O(L) where L is the word length, regardless of dictionary size.</p>
+
+  <p style="color:var(--ink-faint); font-size:13px; margin-top:44px; font-style:italic;">
+    Interview Prep Series · Post #11 of 20
+  </p>
+
+</div>
+</main>
+
+<footer class="post-footer">
+  <strong>Interview Prep Series</strong> — Arrays & Hashing · Two Pointers · Sliding Window · Prefix Sum · Binary Search · Sorting · Intervals · Stacks & Queues · Linked Lists · Trees & DFS · Trees & BFS · and 9 more.
+  <p class="next-label">Next: Tries →</p>
+</footer>
+
+</body>
+</html>
